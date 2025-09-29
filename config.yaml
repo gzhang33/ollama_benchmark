@@ -1,0 +1,41 @@
+# Ollama Benchmark Configuration File
+# This file defines the settings for benchmarking your Ollama instance
+
+# Ollama server configuration
+ollama_url: "http://localhost:11434"
+
+# Models to benchmark
+# Make sure these models are available in your Ollama instance
+models:
+  - "llama2"
+  - "codellama"
+  - "mistral"
+
+# Test prompts of varying complexity
+prompts:
+  # Short conversational prompts
+  - "Hello, how are you today?"
+  - "What's the weather like?"
+  
+  # Medium complexity prompts
+  - "Write a short poem about technology."
+  - "Explain the concept of artificial intelligence in simple terms."
+  - "List 5 benefits of renewable energy."
+  
+  # Complex prompts requiring reasoning
+  - "Explain quantum computing and how it differs from classical computing."
+  - "Write a Python function to calculate the Fibonacci sequence and explain how it works."
+  - "Describe the pros and cons of different machine learning algorithms for classification tasks."
+  
+  # Code generation prompts
+  - "Write a simple web scraper in Python using requests and BeautifulSoup."
+  - "Create a SQL query to find the top 10 customers by total purchase amount."
+
+# Number of runs per test (for statistical accuracy)
+num_runs: 3
+
+# Output format: table, json, csv
+output_format: "table"
+
+# Save model responses in results (useful for quality analysis)
+save_responses: false
