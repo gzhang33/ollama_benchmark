@@ -1,0 +1,852 @@
+{
+  "timestamp": "20251003_151414",
+  "total_models": 9,
+  "results": [
+    {
+      "model": "deepseek-r1:7b",
+      "total_tokens": 1200,
+      "total_duration": 24.902784200035967,
+      "average_speed": 48.18738299945863,
+      "success_rate": 1.0,
+      "test_count": 3,
+      "details": [
+        {
+          "model": "deepseek-r1:7b",
+          "prompt": "给定两个字符串 word1 和 word2，请计算将 word1 转换为 word2 所需的最少操作次数。允许的操作包括插入一个字符、删除一个字符和替换一个字符。请提供完整的Python实现，包括算法思路、时间复杂度和空间复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 10.162894400011282,
+          "tokens_per_second": 39.35886611195684,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 1.0,
+                "memory_used": 1691.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 6542.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 5.3,
+          "cpu_util_after": 8.9,
+          "response_preview": "<think>\n嗯，我现在需要解决的问题是计算将两个字符串word1转换为word2所需的最少操作次数。允许的操作有插入、删除和替换字符。我得先想一下怎么处理这个问题。\n\n首先，我记得这可能是一个经典的动态规划问题，对吧？因为涉及到两个字符串之间的转换，而且每次操作都是可选的，所以需要找到一个最优解路径。那动态规划应该是个不错的选择。\n\n那动态规划通常需要考虑状态和转移。这里的状态应该是两个指针分"
+        },
+        {
+          "model": "deepseek-r1:7b",
+          "prompt": "给定一个只包含 '(' 和 ')' 的字符串，找出其中最长的有效（格式正确且连续）括号子串的长度。请提供Python解决方案，包括算法思路、代码实现、测试用例和复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 7.366290700039826,
+          "tokens_per_second": 54.301413871412564,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 6544.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 6544.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 4.4,
+          "cpu_util_after": 8.6,
+          "response_preview": "<think>\n好的，我现在需要解决的问题是：给定一个只包含 '(' 和 ')' 的字符串，找出其中最长的有效括号子串的长度。我要先理解问题，然后思考解决方案。\n\n首先，这个问题类似于经典的“有效括号”问题，但这次要找的是最长的连续且有效的括号子串。那我应该怎样高效地找到这样的子串呢？\n\n我记得之前学过一种方法是使用栈来处理括号匹配的问题。这可能是一个可行的方向。或者，也可以用动态规划的方法。这两"
+        },
+        {
+          "model": "deepseek-r1:7b",
+          "prompt": "给定一个由 'X' 和 'O' 组成的二维矩阵，找到所有被 'X' 围绕的区域，并将这些区域里的 'O' 用 'X' 填充。被围绕的区域是指不与边界上的 'O' 相连的区域。请提供完整的Python实现，包括算法说明和复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 7.373599099984858,
+          "tokens_per_second": 54.247592603837305,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 6544.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 93.0,
+                "memory_used": 6544.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 9.3,
+          "cpu_util_after": 9.5,
+          "response_preview": "<think>\n好的，我现在遇到了一个编程问题，需要解决它。问题是这样的：给定一个由'X'和'O'组成的二维矩阵，找到所有被'X'包围的区域，并将这些区域里的'O'替换成'X'。被包围的区域是指那些不与边界上的'O'相连的区域。\n\n首先，我得理解问题。比如，假设有一个类似迷宫的结构，里面的O如果被周围的X包围，那么这些O是不能被替换的吗？或者应该反过来想：只有那些O如果和边界的O连通，那么它们所在"
+        }
+      ]
+    },
+    {
+      "model": "deepseek-r1:8b",
+      "total_tokens": 772,
+      "total_duration": 21.702965799951926,
+      "average_speed": 35.57117525392359,
+      "success_rate": 1.0,
+      "test_count": 3,
+      "details": [
+        {
+          "model": "deepseek-r1:8b",
+          "prompt": "给定两个字符串 word1 和 word2，请计算将 word1 转换为 word2 所需的最少操作次数。允许的操作包括插入一个字符、删除一个字符和替换一个字符。请提供完整的Python实现，包括算法思路、时间复杂度和空间复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 369,
+          "duration": 9.825243300001603,
+          "tokens_per_second": 37.55632188771751,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 93.0,
+                "memory_used": 6544.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 12218.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 10.0,
+          "cpu_util_after": 13.6,
+          "response_preview": "<think>\n首先，我们要求计算将字符串word1转换成word2所需的最少操作次数，操作，包括插入和删除和替换，并且要求最少操作次数最少，实际上就是编辑距离。经典编辑距离问题，即Levenshteinstein距离。\n 我们使用动态规划解决。\n 定义dp[i][j] 表示word1的前i个字符和word2的编辑距离。\n状态\n dp[i][j] = 0] = j  （因为删除所有字符1删除，所以"
+        },
+        {
+          "model": "deepseek-r1:8b",
+          "prompt": "给定一个只包含 '(' 和 ')' 的字符串，找出其中最长的有效（格式正确且连续）括号子串的长度。请提供Python解决方案，包括算法思路、代码实现、测试用例和复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 3,
+          "duration": 3.8812652999768034,
+          "tokens_per_second": 0.7729438129410864,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 12218.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 12218.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 3.2,
+          "cpu_util_after": 7.2,
+          "response_preview": "<think>\n首先，我们注意到题目是给定的字符串只包含'('和')，但是括号，且是混合的字符串，我们需要找出最长有效连续且正确的括号子串，注意是连续且是连续的，所以我们需要连续子串子串必须是连续有效括号连续括号并且连续括号对匹配的连续出现，括号连续连续子串必须连续出现连续连续括号必须连续\n 但连续连续连续连续连续连续连续连续连续连续连续连续连续连续连续连续连续连续连续连续连续连续连续连续连续连续"
+        },
+        {
+          "model": "deepseek-r1:8b",
+          "prompt": "给定一个由 'X' 和 'O' 组成的二维矩阵，找到所有被 'X' 围绕的区域，并将这些区域里的 'O' 用 'X' 填充。被围绕的区域是指不与边界上的 'O' 相连的区域。请提供完整的Python实现，包括算法说明和复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 7.99645719997352,
+          "tokens_per_second": 50.022152310316194,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 12218.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 96.0,
+                "memory_used": 12214.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 2.3,
+          "cpu_util_after": 9.3,
+          "response_preview": "<think>\n首先，我需要理解这个问题是给定一个由'X和O组成的二维网格，找出被X围成的区域，并且这些被X包围的O用X包围的区域中的O。意思是被边界连接的区域。问题。让我再读一下描述：给定一个由'X组成的二维矩阵，找到所有被的X围区域，并将这些区域中的用X，被围上的O区域是不被边界区域O连的。意思是，提供完整的算法和复杂度。\n\n我输出4。\n\n问题是：给定一个二维网格，其中包含'和，找到被包围的区"
+        }
+      ]
+    },
+    {
+      "model": "gemma3:12b",
+      "total_tokens": 1193,
+      "total_duration": 38.365740600042045,
+      "average_speed": 31.0954508199613,
+      "success_rate": 1.0,
+      "test_count": 3,
+      "details": [
+        {
+          "model": "gemma3:12b",
+          "prompt": "给定两个字符串 word1 和 word2，请计算将 word1 转换为 word2 所需的最少操作次数。允许的操作包括插入一个字符、删除一个字符和替换一个字符。请提供完整的Python实现，包括算法思路、时间复杂度和空间复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 15.814842799969483,
+          "tokens_per_second": 25.29269529007091,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 96.0,
+                "memory_used": 12214.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 11471.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 11.8,
+          "cpu_util_after": 13.2,
+          "response_preview": "```python\ndef min_distance(word1: str, word2: str) -> int:\n    \"\"\"\n    计算将 word1 转换为 word2 所需的最少操作次数 (编辑距离)。\n\n    Args:\n        word1: 第一个字符串。\n        word2: 第二个字符串。\n\n    Returns:\n        将 word1 转换为 "
+        },
+        {
+          "model": "gemma3:12b",
+          "prompt": "给定一个只包含 '(' 和 ')' 的字符串，找出其中最长的有效（格式正确且连续）括号子串的长度。请提供Python解决方案，包括算法思路、代码实现、测试用例和复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 393,
+          "duration": 11.203986300039105,
+          "tokens_per_second": 35.076801191610556,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 11471.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 96.0,
+                "memory_used": 11471.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 5.4,
+          "cpu_util_after": 10.3,
+          "response_preview": "```python\ndef longestValidParentheses(s):\n    \"\"\"\n    找出字符串中最长的有效括号子串长度。\n\n    Args:\n        s: 只包含 '(' 和 ')' 的字符串。\n\n    Returns:\n        最长的有效括号子串的长度。\n    \"\"\"\n    max_len = 0\n    stack = [-1]  # 初始化栈，"
+        },
+        {
+          "model": "gemma3:12b",
+          "prompt": "给定一个由 'X' 和 'O' 组成的二维矩阵，找到所有被 'X' 围绕的区域，并将这些区域里的 'O' 用 'X' 填充。被围绕的区域是指不与边界上的 'O' 相连的区域。请提供完整的Python实现，包括算法说明和复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 11.346911500033457,
+          "tokens_per_second": 35.251883298712656,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 96.0,
+                "memory_used": 11471.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 96.0,
+                "memory_used": 11471.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 11.3,
+          "cpu_util_after": 10.2,
+          "response_preview": "```python\ndef solve(board):\n    \"\"\"\n    找到并填充被 'X' 围绕的 'O' 区域。\n\n    Args:\n        board: 一个二维字符列表，包含 'X' 和 'O'。\n\n    Returns:\n        None (修改 board 原地)\n    \"\"\"\n    if not board:\n        return\n\n    r"
+        }
+      ]
+    },
+    {
+      "model": "gemma3:4b",
+      "total_tokens": 1200,
+      "total_duration": 20.59418110002298,
+      "average_speed": 58.268886447670454,
+      "success_rate": 1.0,
+      "test_count": 3,
+      "details": [
+        {
+          "model": "gemma3:4b",
+          "prompt": "给定两个字符串 word1 和 word2，请计算将 word1 转换为 word2 所需的最少操作次数。允许的操作包括插入一个字符、删除一个字符和替换一个字符。请提供完整的Python实现，包括算法思路、时间复杂度和空间复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 8.92564269999275,
+          "tokens_per_second": 44.814700010378516,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 96.0,
+                "memory_used": 11471.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 91.0,
+                "memory_used": 6457.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 39.3,
+          "cpu_util_after": 15.8,
+          "response_preview": "```python\ndef min_distance(word1, word2):\n  \"\"\"\n  计算将 word1 转换为 word2 所需的最少操作次数。\n\n  Args:\n    word1: 第一个字符串。\n    word2: 第二个字符串。\n\n  Returns:\n    将 word1 转换为 word2 所需的最少操作次数。\n  \"\"\"\n\n  n = len(word1)\n  m"
+        },
+        {
+          "model": "gemma3:4b",
+          "prompt": "给定一个只包含 '(' 和 ')' 的字符串，找出其中最长的有效（格式正确且连续）括号子串的长度。请提供Python解决方案，包括算法思路、代码实现、测试用例和复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 5.816173000028357,
+          "tokens_per_second": 68.77374520978826,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 91.0,
+                "memory_used": 6457.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 91.0,
+                "memory_used": 6457.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 16.1,
+          "cpu_util_after": 9.3,
+          "response_preview": "```python\ndef longest_valid_parentheses(s):\n    \"\"\"\n    找出只包含 '(' 和 ')' 的字符串中最长的有效括号子串的长度。\n\n    算法思路：\n    使用栈来存储索引。当遇到'('时，将索引压入栈中。\n    当遇到')'时，从栈中弹出索引。\n    如果栈为空，则表示当前')'是有效括号的开始。\n    记录有效括号子串的长度，并更新"
+        },
+        {
+          "model": "gemma3:4b",
+          "prompt": "给定一个由 'X' 和 'O' 组成的二维矩阵，找到所有被 'X' 围绕的区域，并将这些区域里的 'O' 用 'X' 填充。被围绕的区域是指不与边界上的 'O' 相连的区域。请提供完整的Python实现，包括算法说明和复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 5.852365400001872,
+          "tokens_per_second": 68.34843224243518,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 91.0,
+                "memory_used": 6457.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 92.0,
+                "memory_used": 6457.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 12.0,
+          "cpu_util_after": 9.9,
+          "response_preview": "```python\ndef solve(board):\n    \"\"\"\n    找到所有被 'X' 围绕的区域，并将这些区域里的 'O' 用 'X' 填充。\n\n    Args:\n        board: 由 'X' 和 'O' 组成的二维矩阵。\n\n    Returns:\n        修改后的二维矩阵。\n    \"\"\"\n\n    if not board or not board[0]:"
+        }
+      ]
+    },
+    {
+      "model": "llama3.1:8b-instruct-q8_0",
+      "total_tokens": 1200,
+      "total_duration": 36.99706149997655,
+      "average_speed": 32.43500838575411,
+      "success_rate": 1.0,
+      "test_count": 3,
+      "details": [
+        {
+          "model": "llama3.1:8b-instruct-q8_0",
+          "prompt": "给定两个字符串 word1 和 word2，请计算将 word1 转换为 word2 所需的最少操作次数。允许的操作包括插入一个字符、删除一个字符和替换一个字符。请提供完整的Python实现，包括算法思路、时间复杂度和空间复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 15.132942500000354,
+          "tokens_per_second": 26.432400704621102,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 92.0,
+                "memory_used": 6457.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 15030.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 10.9,
+          "cpu_util_after": 10.2,
+          "response_preview": "```python\ndef min_distance(word1, word2):\n    \"\"\"\n    计算将 word1 转换为 word2 所需的最少操作次数。\n    \n    :param word1: 首先要转换的字符串\n    :type word1: str\n    :param word2: 目标字符串\n    :type word2: str\n    :return: 将 w"
+        },
+        {
+          "model": "llama3.1:8b-instruct-q8_0",
+          "prompt": "给定一个只包含 '(' 和 ')' 的字符串，找出其中最长的有效（格式正确且连续）括号子串的长度。请提供Python解决方案，包括算法思路、代码实现、测试用例和复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 10.963824899983592,
+          "tokens_per_second": 36.48361804835086,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 15030.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 15030.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 11.1,
+          "cpu_util_after": 9.2,
+          "response_preview": "**括号匹配问题**\n===============\n\n给定一个只包含 '(' 和 ')' 的字符串，找出其中最长的有效（格式正确且连续）括号子串的长度。\n\n**算法思路**\n-------------\n\n1. 使用栈数据结构来跟踪遇到的左括号。\n2. 遍历输入字符串：\n   * 当遇到左括号时，将其压入栈中。\n   * 当遇到右括号时，检查栈顶元素是否与当前右括号匹配：\n     + 如果匹配，"
+        },
+        {
+          "model": "llama3.1:8b-instruct-q8_0",
+          "prompt": "给定一个由 'X' 和 'O' 组成的二维矩阵，找到所有被 'X' 围绕的区域，并将这些区域里的 'O' 用 'X' 填充。被围绕的区域是指不与边界上的 'O' 相连的区域。请提供完整的Python实现，包括算法说明和复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 10.900294099992607,
+          "tokens_per_second": 36.696257580818056,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 15030.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 98.0,
+                "memory_used": 15030.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 9.3,
+          "cpu_util_after": 9.3,
+          "response_preview": "**解决方案**\n===============\n\n我们将使用深度优先搜索（DFS）来解决这个问题。\n\n### 算法思路\n\n1. 定义一个函数 `dfs(row, col)` 来进行 DFS 搜索，`row` 和 `col` 指定当前位置。\n2. 在 DFS 中，如果遇到 'O'，则标记其为被围绕的区域，并向四个方向（上、下、左、右）继续探索。\n3. 如果遇到 'X'，则跳过当前位置，不进行任何操"
+        }
+      ]
+    },
+    {
+      "model": "mistral:7b-instruct-v0.3-q5_K_M",
+      "total_tokens": 1200,
+      "total_duration": 27.509790799987968,
+      "average_speed": 43.62083335074016,
+      "success_rate": 1.0,
+      "test_count": 3,
+      "details": [
+        {
+          "model": "mistral:7b-instruct-v0.3-q5_K_M",
+          "prompt": "给定两个字符串 word1 和 word2，请计算将 word1 转换为 word2 所需的最少操作次数。允许的操作包括插入一个字符、删除一个字符和替换一个字符。请提供完整的Python实现，包括算法思路、时间复杂度和空间复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 11.512464200030081,
+          "tokens_per_second": 34.74495060744292,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 98.0,
+                "memory_used": 15030.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 98.0,
+                "memory_used": 7463.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 13.6,
+          "cpu_util_after": 10.5,
+          "response_preview": " 该问题可以解决为最小编辑距离问题（Minimum Edit Distance），它是一种常见的动态规划算法问题。这个问题要求给定两个字符串，计算出将一个字符串转换成另一个所需的最少操作次数，每个操作包括插入、删除和替换一个字符。\n\n下面是 Python 实现的算法思路、时间复杂度和空间复杂度分析，以及完整的代码：\n\n**算法思路**：\n1. 创建一个二维数组 dp，用于存储字符串 word1 和"
+        },
+        {
+          "model": "mistral:7b-instruct-v0.3-q5_K_M",
+          "prompt": "给定一个只包含 '(' 和 ')' 的字符串，找出其中最长的有效（格式正确且连续）括号子串的长度。请提供Python解决方案，包括算法思路、代码实现、测试用例和复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 8.011034499970265,
+          "tokens_per_second": 49.931129369307385,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 98.0,
+                "memory_used": 7463.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 98.0,
+                "memory_used": 7463.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 15.6,
+          "cpu_util_after": 8.1,
+          "response_preview": " 给定一个只包含 '(' 和 ')' 的字符串 `s`，我们要找到其中最长的有效（格式正确且连续）括号子串的长度。\n\n**算法思路**：\n1. 初始化一个辅助数组 `stack`，用于记录当前遇到的左括号。\n2. 遍历字符串 `s`，如果当前字符是 '('，则将其压入栈中；如果当前字符是 ')', 则弹出栈顶元素并计算当前有效括号子串的长度（栈非空），同时更新最长有效括号子串的长度。\n3. 返回最"
+        },
+        {
+          "model": "mistral:7b-instruct-v0.3-q5_K_M",
+          "prompt": "给定一个由 'X' 和 'O' 组成的二维矩阵，找到所有被 'X' 围绕的区域，并将这些区域里的 'O' 用 'X' 填充。被围绕的区域是指不与边界上的 'O' 相连的区域。请提供完整的Python实现，包括算法说明和复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 7.986292099987622,
+          "tokens_per_second": 50.085821429023355,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 98.0,
+                "memory_used": 7463.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 98.0,
+                "memory_used": 7465.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 10.7,
+          "cpu_util_after": 8.8,
+          "response_preview": " 我们可以使用深度优先搜索（DFS）来解决这个问题。首先，我们定义一个 helper 函数 `dfs`，它接受二维矩阵的行和列索引以及当前值（'X'或'O'）作为参数，并在满足条件的情况下递归地更新相邻格子的值。\n\n```python\ndef dfs(grid, x, y, value):\n    if not (0 <= x < len(grid) and 0 <= y < len(grid[0"
+        }
+      ]
+    },
+    {
+      "model": "phi4-mini:3.8b",
+      "total_tokens": 1200,
+      "total_duration": 18.834441799961496,
+      "average_speed": 63.713064222718465,
+      "success_rate": 1.0,
+      "test_count": 3,
+      "details": [
+        {
+          "model": "phi4-mini:3.8b",
+          "prompt": "给定两个字符串 word1 和 word2，请计算将 word1 转换为 word2 所需的最少操作次数。允许的操作包括插入一个字符、删除一个字符和替换一个字符。请提供完整的Python实现，包括算法思路、时间复杂度和空间复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 7.793063299963251,
+          "tokens_per_second": 51.3276980570511,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 98.0,
+                "memory_used": 7465.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 92.0,
+                "memory_used": 10906.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 8.8,
+          "cpu_util_after": 8.5,
+          "response_preview": "要解决这个问题，我们可以使用动态规划来计算从 word1 转换为 word2 的最少操作次数。这种方法基于 Knuth-Morris-Pratt 算法（KMP）用于字符串匹配，但我们将其扩展以找到最少的操作。\n\nPython实现如下：\n\n```python\ndef kmp_table(pattern):\n    m = len(pattern)\n    lps = [0] * m  # Longe"
+        },
+        {
+          "model": "phi4-mini:3.8b",
+          "prompt": "给定一个只包含 '(' 和 ')' 的字符串，找出其中最长的有效（格式正确且连续）括号子串的长度。请提供Python解决方案，包括算法思路、代码实现、测试用例和复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 5.551285099994857,
+          "tokens_per_second": 72.05538767957903,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 92.0,
+                "memory_used": 10906.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 91.0,
+                "memory_used": 10906.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 10.9,
+          "cpu_util_after": 7.8,
+          "response_preview": "要解决这个问题，我们可以使用一个简单的递归函数来检查字符串中每个位置是否可以作为有效的括号子串的开头。我们还会跟踪最长发现的子串长度。\n\n这是算法思路：\n\n1. 初始化一个变量 `max_length` 为 0，记录找到过的最长有效括号子串。\n2. 创建一个递归函数 `find_max_length(index, open_count)`，它接受两个参数：当前检查的索引位置和打开（ '(' ）标签"
+        },
+        {
+          "model": "phi4-mini:3.8b",
+          "prompt": "给定一个由 'X' 和 'O' 组成的二维矩阵，找到所有被 'X' 围绕的区域，并将这些区域里的 'O' 用 'X' 填充。被围绕的区域是指不与边界上的 'O' 相连的区域。请提供完整的Python实现，包括算法说明和复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 5.4900934000033885,
+          "tokens_per_second": 72.85850546727549,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 91.0,
+                "memory_used": 10906.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 92.0,
+                "memory_used": 10906.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 13.6,
+          "cpu_util_after": 8.3,
+          "response_preview": "为了解决这个问题，我们可以使用深度优先搜索（DFS）来遍历矩阵中的每个字母。如果遇到一个 'X'，我们将从它开始我们的 DFS 来寻找被围绕的区域，然后如果该区域中有'O' 会将这些'O'替换为'X'。为了优化，我们可以在遍历时检查是否接触边界上的'O'并且不包含任何'O'。\n\n以下是完整Python实现，包括复杂度分析：\n\n```python\ndef fill_surrounded_region"
+        }
+      ]
+    },
+    {
+      "model": "qwen2.5:14b-instruct-q5_K_M",
+      "total_tokens": 1200,
+      "total_duration": 46.96566209994489,
+      "average_speed": 25.550581985756953,
+      "success_rate": 1.0,
+      "test_count": 3,
+      "details": [
+        {
+          "model": "qwen2.5:14b-instruct-q5_K_M",
+          "prompt": "给定两个字符串 word1 和 word2，请计算将 word1 转换为 word2 所需的最少操作次数。允许的操作包括插入一个字符、删除一个字符和替换一个字符。请提供完整的Python实现，包括算法思路、时间复杂度和空间复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 19.465985400020145,
+          "tokens_per_second": 20.54866433833789,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 92.0,
+                "memory_used": 10906.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 12550.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 12.2,
+          "cpu_util_after": 10.0,
+          "response_preview": "这个问题可以通过动态规划来解决，具体来说是使用编辑距离（Levenshtein Distance）的概念。\n\n### 算法思路\n\n1. **定义DP数组**：创建一个二维数组`dp[i][j]`表示将字符串`s1[0...i-1]`转换为`s2[0...j-1]`所需的最小操作数。\n2. **状态转移方程**：\n   - 如果`s1[i-1] == s2[j-1]`，则不需要额外的操作，即`dp["
+        },
+        {
+          "model": "qwen2.5:14b-instruct-q5_K_M",
+          "prompt": "给定一个只包含 '(' 和 ')' 的字符串，找出其中最长的有效（格式正确且连续）括号子串的长度。请提供Python解决方案，包括算法思路、代码实现、测试用例和复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 13.703034699952696,
+          "tokens_per_second": 29.19061425140964,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 12550.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 12550.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 10.0,
+          "cpu_util_after": 10.1,
+          "response_preview": "### 解决方案概述\n\n给定一个只包含 '(' 和 ')' 的字符串，我们需要找到最长的有效（格式正确且连续）括号子串的长度。有效括号意味着每个左括号 '(' 都有一个对应的右括号 ')' 与其匹配，并且它们之间没有嵌套或重叠。\n\n#### 算法思路\n\n我们可以通过多种方法解决这个问题，这里介绍一种使用栈的方法：\n1. 使用一个栈来存储索引（而非字符），初始时将 -1 入栈。这样做的目的是处理那些"
+        },
+        {
+          "model": "qwen2.5:14b-instruct-q5_K_M",
+          "prompt": "给定一个由 'X' 和 'O' 组成的二维矩阵，找到所有被 'X' 围绕的区域，并将这些区域里的 'O' 用 'X' 填充。被围绕的区域是指不与边界上的 'O' 相连的区域。请提供完整的Python实现，包括算法说明和复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 13.796641999972053,
+          "tokens_per_second": 28.992562103213974,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 12550.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 12550.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 11.5,
+          "cpu_util_after": 8.9,
+          "response_preview": "### 算法描述\n\n对于这个问题，我们可以使用深度优先搜索（DFS）或者广度优先搜索（BFS），但是直接从 'O' 开始进行DFS或BFS可能并不高效，因为这会导致大量的重复工作并且难以识别边界相连的'O'。\n\n一种更有效的方法是从矩阵的四个边缘开始遍历所有为 'O' 的位置，并将它们标记为临时字符，比如 'T'。这样做是因为这些 'O' 一定是不会被包围的，然后我们可以通过扫描整个矩阵来填充那些"
+        }
+      ]
+    },
+    {
+      "model": "qwen2.5:7b-instruct",
+      "total_tokens": 1200,
+      "total_duration": 25.413162100012414,
+      "average_speed": 47.21962561280061,
+      "success_rate": 1.0,
+      "test_count": 3,
+      "details": [
+        {
+          "model": "qwen2.5:7b-instruct",
+          "prompt": "给定两个字符串 word1 和 word2，请计算将 word1 转换为 word2 所需的最少操作次数。允许的操作包括插入一个字符、删除一个字符和替换一个字符。请提供完整的Python实现，包括算法思路、时间复杂度和空间复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 10.560190599993803,
+          "tokens_per_second": 37.87810420772469,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 12550.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 93.0,
+                "memory_used": 6598.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 17.2,
+          "cpu_util_after": 9.5,
+          "response_preview": "要解决这个问题，我们可以使用动态规划的方法来计算两个字符串之间的最小编辑距离（Levenshtein Distance）。这种方法的核心思想是通过构建一个矩阵来记录从空字符串到当前子序列的最短操作次数。\n\n### 算法思路\n\n1. **初始化**：创建一个二维数组 `dp`，其中 `dp[i][j]` 表示将 `word1` 的前 i 个字符转换为 `word2` 的前 j 个字符所需的最小操作次"
+        },
+        {
+          "model": "qwen2.5:7b-instruct",
+          "prompt": "给定一个只包含 '(' 和 ')' 的字符串，找出其中最长的有效（格式正确且连续）括号子串的长度。请提供Python解决方案，包括算法思路、代码实现、测试用例和复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 7.434552700025961,
+          "tokens_per_second": 53.802833356551936,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 93.0,
+                "memory_used": 6598.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 6598.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 6.9,
+          "cpu_util_after": 8.0,
+          "response_preview": "要解决这个问题，我们可以使用栈来辅助判断哪些位置组成的子字符串是有效的括号匹配。具体来说，当遇到左括号时将其下标入栈；遇到右括号时，如果此时栈不为空，则说明当前的右括号与栈顶的左括号构成了一对有效匹配，并且可以计算这对匹配所覆盖的有效长度。若栈为空或没有匹配上，则将当前右括号的下标压入栈中。\n\n### 算法思路\n1. 初始化一个空列表 `stack` 用于存储索引位置。\n2. 遍历字符串 `s`："
+        },
+        {
+          "model": "qwen2.5:7b-instruct",
+          "prompt": "给定一个由 'X' 和 'O' 组成的二维矩阵，找到所有被 'X' 围绕的区域，并将这些区域里的 'O' 用 'X' 填充。被围绕的区域是指不与边界上的 'O' 相连的区域。请提供完整的Python实现，包括算法说明和复杂度分析。输出限制在400个tokens。",
+          "output_tokens": 400,
+          "duration": 7.418418799992651,
+          "tokens_per_second": 53.91984609987188,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 6598.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 6598.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 5.5,
+          "cpu_util_after": 8.4,
+          "response_preview": "要解决这个问题，可以采用深度优先搜索（DFS）或广度优先搜索（BFS），或者使用并查集来标记所有与边界相连的'O'区域，从而将所有未被标记的'O'转变为'X'。这里我提供一种基于DFS的方法实现。\n\n### 算法思路\n\n1. **初始化**：遍历二维矩阵的所有元素。\n2. **深度优先搜索（DFS）**：从每个边界的'O'出发，使用DFS或BFS将所有直接或间接与边界相连的'O'标记为特殊字符（如"
+        }
+      ]
+    }
+  ]
+}

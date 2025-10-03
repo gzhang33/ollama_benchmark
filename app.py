@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Interactive Model Comparison Tool with GUI
-可视化交互式模型对比工具 - 单界面输入，所有模型并行回答
+Interactive model comparison tool - single interface input, all models respond in parallel
 """
 
 import concurrent.futures
@@ -14,9 +14,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import requests
 import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox, filedialog
+
+from ollama_client import OllamaClient, get_available_models, query_model
+from ollama_utils import create_timestamp
 
 
 @dataclass
@@ -312,7 +314,7 @@ class LandingPageView:
         icons_label.pack(pady=(0, 20))
         
         # Title
-        title_label = tk.Label(center_frame, text="Find the best AI for you",
+        title_label = tk.Label(center_frame, text="AI Model Comparison Tool",
                               font=('Arial', 24, 'bold'),
                               bg='#f8f9fa', fg='#2c3e50')
         title_label.pack(pady=(0, 10))
@@ -335,7 +337,7 @@ class LandingPageView:
                                    bg='white', fg='#2c3e50',
                                    relief='flat', borderwidth=0)
         self.input_entry.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=12)
-        self.input_entry.insert(0, "Ask anything...")
+        self.input_entry.insert(0, "Enter your question...")
         self.input_entry.bind('<FocusIn>', self._on_entry_focus_in)
         self.input_entry.bind('<FocusOut>', self._on_entry_focus_out)
         self.input_entry.bind('<Return>', lambda e: self._on_submit())
@@ -465,20 +467,20 @@ class LandingPageView:
     
     def _on_entry_focus_in(self, event):
         """Clear placeholder text on focus"""
-        if self.input_entry.get() == "Ask anything...":
+        if self.input_entry.get() == "Enter your question...":
             self.input_entry.delete(0, tk.END)
             self.input_entry.config(fg='#2c3e50')
     
     def _on_entry_focus_out(self, event):
         """Restore placeholder text if empty"""
         if not self.input_entry.get():
-            self.input_entry.insert(0, "Ask anything...")
+            self.input_entry.insert(0, "Enter your question...")
             self.input_entry.config(fg='#7f8c8d')
     
     def _on_submit(self):
         """Handle submit button click"""
         query = self.input_entry.get().strip()
-        if query and query != "Ask anything...":
+        if query and query != "Enter your question...":
             self.on_submit_callback(query)
     
     def update_model_count(self, count: int):
@@ -494,12 +496,12 @@ class LandingPageView:
     def get_input_text(self) -> str:
         """Get the current input text"""
         text = self.input_entry.get().strip()
-        return text if text != "Ask anything..." else ""
+        return text if text != "Enter your question..." else ""
     
     def clear_input(self):
         """Clear the input field"""
         self.input_entry.delete(0, tk.END)
-        self.input_entry.insert(0, "Ask anything...")
+        self.input_entry.insert(0, "Enter your question...")
         self.input_entry.config(fg='#7f8c8d')
     
     def show(self):
@@ -538,7 +540,7 @@ class BottomInputBar:
                                    relief='flat', borderwidth=0)
         self.input_entry.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, 
                              padx=10, pady=8)
-        self.input_entry.insert(0, "Ask followup...")
+        self.input_entry.insert(0, "Ask follow-up question...")
         self.input_entry.bind('<FocusIn>', self._on_entry_focus_in)
         self.input_entry.bind('<FocusOut>', self._on_entry_focus_out)
         self.input_entry.bind('<Return>', lambda e: self._on_submit())
@@ -554,14 +556,14 @@ class BottomInputBar:
     
     def _on_entry_focus_in(self, event):
         """Clear placeholder text on focus"""
-        if self.input_entry.get() == "Ask followup...":
+        if self.input_entry.get() == "Ask follow-up question...":
             self.input_entry.delete(0, tk.END)
             self.input_entry.config(fg='#2c3e50')
     
     def _on_entry_focus_out(self, event):
         """Restore placeholder text if empty"""
         if not self.input_entry.get():
-            self.input_entry.insert(0, "Ask followup...")
+            self.input_entry.insert(0, "Ask follow-up question...")
             self.input_entry.config(fg='#7f8c8d')
     
     def _on_submit(self):
@@ -570,18 +572,18 @@ class BottomInputBar:
             return
         
         query = self.input_entry.get().strip()
-        if query and query != "Ask followup...":
+        if query and query != "Ask follow-up question...":
             self.on_submit_callback(query)
     
     def get_input_text(self) -> str:
         """Get the current input text"""
         text = self.input_entry.get().strip()
-        return text if text != "Ask followup..." else ""
+        return text if text != "Ask follow-up question..." else ""
     
     def clear_input(self):
         """Clear the input field"""
         self.input_entry.delete(0, tk.END)
-        self.input_entry.insert(0, "Ask followup...")
+        self.input_entry.insert(0, "Ask follow-up question...")
         self.input_entry.config(fg='#7f8c8d')
     
     def disable(self):
@@ -646,115 +648,138 @@ class ModelResponseColumn:
     def __init__(self, parent, model_response: ModelResponse):
         self.parent = parent
         self.model_response = model_response
+        self.min_width = 300
+        self.max_width = 600
+        self.preferred_width = 400
         
         self.container = tk.Frame(parent, bg='white', 
                                  relief='solid', borderwidth=1,
-                                 width=350)
-        # Remove pack_propagate(False) to allow natural sizing
+                                 width=self.preferred_width,
+                                 height=400)  # Set minimum height
+        self.container.pack_propagate(False)  # Maintain consistent width and height
         self.setup_ui()
     
     def setup_ui(self):
-        """Setup the column UI"""
-        # Header with model name
-        header_frame = tk.Frame(self.container, bg='#f8f9fa', height=40)
+        """Setup the column UI with adaptive sizing"""
+        # Header with model name - more compact
+        header_frame = tk.Frame(self.container, bg='#f8f9fa', height=35)
         header_frame.pack(fill=tk.X)
         header_frame.pack_propagate(False)
         
         model_label = tk.Label(header_frame, 
                               text=self.model_response.model,
-                              font=('Arial', 11, 'bold'),
+                              font=('Arial', 10, 'bold'),
                               bg='#f8f9fa', fg='#2c3e50',
-                              padx=10)
-        model_label.pack(side=tk.LEFT, pady=10)
+                              padx=8, wraplength=350)
+        model_label.pack(side=tk.LEFT, pady=8)
         
-        # Content area (no individual scrolling) - expand to fill available space
+        # Content area with better text handling
         self.content_text = tk.Text(
             self.container,
-            font=('Arial', 10),
+            font=('Arial', 9),
             bg='white', fg='#2c3e50',
             wrap=tk.WORD,
             relief='flat',
-            padx=10, pady=10,
-            width=40    # Fixed width for consistent column sizing
+            padx=8, pady=8,
+            width=50,  # Increased width for better text display
+            height=15  # Set reasonable minimum height
         )
-        self.content_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=(5, 0))
+        self.content_text.pack(fill=tk.BOTH, expand=True, padx=3, pady=(3, 0))
         
-        # Footer with metrics
-        footer_frame = tk.Frame(self.container, bg='#f8f9fa', height=30)
-        footer_frame.pack(fill=tk.X, pady=(0, 5))
+        # Footer with metrics - more compact
+        footer_frame = tk.Frame(self.container, bg='#f8f9fa', height=28)
+        footer_frame.pack(fill=tk.X, pady=(0, 3))
         footer_frame.pack_propagate(False)
         
         self.metrics_label = tk.Label(footer_frame,
                                      text="",
-                                     font=('Arial', 9),
+                                     font=('Arial', 8),
                                      bg='#f8f9fa', fg='#7f8c8d',
-                                     padx=10)
-        self.metrics_label.pack(side=tk.LEFT, pady=5)
+                                     padx=8, wraplength=350)
+        self.metrics_label.pack(side=tk.LEFT, pady=4)
         
         # Render content based on state
         self.render_content()
     
     def render_content(self):
-        """Render content based on response state"""
-        print(f"[DEBUG] render_content: {self.model_response.model}, has_error={self.model_response.has_error()}, is_loading={self.model_response.is_loading()}, success={self.model_response.success}")
-        
+        """Render content based on response state with improved text formatting"""
         # Ensure widget is in normal state before modifying
         self.content_text.config(state=tk.NORMAL)
         self.content_text.delete(1.0, tk.END)
         
         if self.model_response.has_error():
             # Error state
-            print(f"[DEBUG] Rendering error state for {self.model_response.model}: {self.model_response.error}")
             self.content_text.insert(tk.END, f"❌ Error\n\n{self.model_response.error}")
             self.content_text.config(fg='#e74c3c')
             self.metrics_label.config(text="Failed")
         elif self.model_response.is_loading():
             # Loading state
-            print(f"[DEBUG] Rendering loading state for {self.model_response.model}")
             self.content_text.insert(tk.END, "⏳ Loading...")
             self.content_text.config(fg='#7f8c8d')
             self.metrics_label.config(text="Processing...")
         else:
-            # Success state
-            print(f"[DEBUG] Rendering success state for {self.model_response.model}, response_len={len(self.model_response.response)}")
-            self.content_text.insert(tk.END, self.model_response.response)
+            # Success state - format text for better readability
+            response_text = self.model_response.response.strip()
+            if response_text:
+                # Insert response with proper formatting
+                self.content_text.insert(tk.END, response_text)
+            else:
+                self.content_text.insert(tk.END, "No response received")
+            
             self.content_text.config(fg='#2c3e50')
             
-            # Format metrics
-            metrics_text = (f"{self.model_response.duration:.1f}s | "
-                          f"{self.model_response.tokens} tokens | "
-                          f"{self.model_response.tokens_per_second:.1f} tok/s")
+            # Format metrics more compactly
+            if self.model_response.duration > 0 and self.model_response.tokens > 0:
+                metrics_text = (f"{self.model_response.duration:.1f}s | "
+                              f"{self.model_response.tokens} tokens | "
+                              f"{self.model_response.tokens_per_second:.1f} tok/s")
+            else:
+                metrics_text = "Completed"
             self.metrics_label.config(text=metrics_text)
-            print(f"[DEBUG] Metrics set for {self.model_response.model}: {metrics_text}")
         
-        # Keep widget in NORMAL state and force multiple updates
+        # Configure text widget for better display
         self.content_text.config(state=tk.NORMAL)
+        
+        # Auto-resize text widget based on content
+        self.auto_resize_text_widget()
+        
+        # Update display
         self.content_text.update_idletasks()
-        self.content_text.update()
-        
-        # Force parent container updates
         self.container.update_idletasks()
-        self.container.update()
-        
-        print(f"[DEBUG] render_content completed for {self.model_response.model}")
-        print(f"[DEBUG] Text widget content length: {len(self.content_text.get(1.0, tk.END))}")
-        
-        # Additional debug: check if widget is visible
+    
+    def auto_resize_text_widget(self):
+        """Automatically resize text widget to fill available space"""
         try:
-            print(f"[DEBUG] Widget visibility - winfo_viewable: {self.content_text.winfo_viewable()}")
-            print(f"[DEBUG] Widget geometry - width: {self.content_text.winfo_width()}, height: {self.content_text.winfo_height()}")
-        except:
-            print(f"[DEBUG] Could not get widget visibility info")
+            # Get the line count of the content
+            line_count = int(self.content_text.index('end-1c').split('.')[0])
+            
+            # Calculate appropriate height to fill the container
+            container_height = self.container.winfo_height()
+            available_height = container_height - 70  # Account for header and footer
+            
+            # Calculate lines that fit in available space
+            line_height = 14  # Approximate line height in pixels
+            max_lines = max(10, available_height // line_height)
+            
+            # Use the smaller of content lines or available space
+            content_height = min(max_lines, max(10, line_count + 2))
+            
+            # Update text widget height
+            self.content_text.config(height=content_height)
+            
+        except Exception as e:
+            # Fallback to reasonable height if calculation fails
+            self.content_text.config(height=15)
     
     def update_response(self, model_response: ModelResponse):
         """Update the response and re-render"""
-        print(f"[DEBUG] ModelResponseColumn.update_response: {model_response.model}, success={model_response.success}")
         self.model_response = model_response
-        self.content_text.config(state=tk.NORMAL)
         self.render_content()
-        # Keep the widget in NORMAL state so content is visible
-        self.content_text.config(state=tk.NORMAL)
-        print(f"[DEBUG] ModelResponseColumn.update_response completed for {model_response.model}")
+    
+    def resize_column(self, new_width: int):
+        """Resize column to new width"""
+        self.preferred_width = max(self.min_width, min(self.max_width, new_width))
+        self.container.config(width=self.preferred_width)
     
     def pack(self, **kwargs):
         """Pack the container"""
@@ -762,25 +787,27 @@ class ModelResponseColumn:
 
 
 class ModelResponseRow:
-    """Horizontal row of model response columns"""
+    """Horizontal row of model response columns with adaptive layout"""
     
     def __init__(self, parent, responses: List[ModelResponse]):
         self.parent = parent
         self.responses = responses
         self.columns = []
+        self.column_width = 400  # Default column width
+        self.min_columns_visible = 2  # Minimum columns to show without scrolling
         
-        # Remove fixed height - let it be adaptive
         self.container = tk.Frame(parent, bg='white')
         self.setup_ui()
     
     def setup_ui(self):
-        """Setup the horizontal response row UI with horizontal scrolling"""
-        print(f"[DEBUG] ModelResponseRow.setup_ui: Creating UI for {len(self.responses)} responses")
-        
+        """Setup the horizontal response row UI with adaptive scrolling"""
         # Create horizontal scrollable canvas for multiple models
         self.canvas = tk.Canvas(self.container, bg='white', highlightthickness=0)
         self.h_scrollbar = ttk.Scrollbar(self.container, orient=tk.HORIZONTAL, command=self.canvas.xview)
         self.columns_frame = tk.Frame(self.canvas, bg='white')
+        
+        # Configure container to expand and fill available space
+        self.container.pack_propagate(False)
         
         # Configure scrolling
         self.columns_frame.bind(
@@ -791,67 +818,90 @@ class ModelResponseRow:
         self.canvas_window = self.canvas.create_window((0, 0), window=self.columns_frame, anchor=tk.NW)
         self.canvas.configure(xscrollcommand=self.h_scrollbar.set)
         
-        # Bind canvas resize to update frame height
+        # Bind canvas resize to update frame height and column widths
         def on_canvas_configure(event):
-            # Update the frame height to match canvas height
-            self.canvas.itemconfig(self.canvas_window, height=event.height)
+            # Update the frame height to match canvas height - use full height
+            canvas_height = max(400, event.height)  # Minimum 400px height
+            self.canvas.itemconfig(self.canvas_window, height=canvas_height)
+            
+            # Calculate optimal column width based on available space
+            available_width = event.width
+            num_columns = len(self.columns)
+            
+            if num_columns > 0:
+                # Calculate optimal width per column
+                optimal_width = max(300, min(600, available_width // min(num_columns, self.min_columns_visible)))
+                self.update_column_widths(optimal_width)
         
         self.canvas.bind('<Configure>', on_canvas_configure)
         
-        # Pack canvas and scrollbar
+        # Pack canvas and scrollbar with full expansion
         self.canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         self.h_scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
         
         # Create columns for each response
+        self.create_columns()
+    
+    def create_columns(self):
+        """Create columns for all responses"""
         for i, response in enumerate(self.responses):
-            print(f"[DEBUG] Creating column {i} for {response.model}")
             column = ModelResponseColumn(self.columns_frame, response)
-            # Set fixed width for consistent layout
-            column.container.config(width=350)
-            column.container.pack(side=tk.LEFT, padx=5, pady=5, fill=tk.Y)
-            column.container.pack_propagate(False)  # Maintain consistent width
+            # Set initial width and height
+            column.container.config(width=self.column_width, height=400)
+            column.container.pack(side=tk.LEFT, padx=3, pady=3, fill=tk.BOTH, expand=True)
+            column.container.pack_propagate(False)
             self.columns.append(column)
-            print(f"[DEBUG] Column {i} created and packed")
-        
-        print(f"[DEBUG] ModelResponseRow.setup_ui completed with {len(self.columns)} columns")
+    
+    def update_column_widths(self, new_width: int):
+        """Update all column widths to new value"""
+        if new_width != self.column_width:
+            self.column_width = new_width
+            for column in self.columns:
+                column.resize_column(new_width)
     
     def update_responses(self, responses: List[ModelResponse]):
         """Update all responses"""
-        print(f"[DEBUG] ModelResponseRow.update_responses called with {len(responses)} responses")
-        print(f"[DEBUG] Current columns count: {len(self.columns)}")
-        
         self.responses = responses
+        
+        # Update existing columns
         for i, response in enumerate(responses):
-            print(f"[DEBUG] Updating column {i}: {response.model}")
             if i < len(self.columns):
                 self.columns[i].update_response(response)
-                print(f"[DEBUG] Column {i} updated successfully")
-            else:
-                print(f"[DEBUG] WARNING: No column {i} available for response {response.model}")
         
-        # Force comprehensive UI update
-        self.force_ui_refresh()
-        print(f"[DEBUG] Forced UI update completed")
+        # If we have more responses than columns, create new columns
+        if len(responses) > len(self.columns):
+            for i in range(len(self.columns), len(responses)):
+                column = ModelResponseColumn(self.columns_frame, responses[i])
+                column.container.config(width=self.column_width, height=400)
+                column.container.pack(side=tk.LEFT, padx=3, pady=3, fill=tk.BOTH, expand=True)
+                column.container.pack_propagate(False)
+                self.columns.append(column)
+        
+        # Update UI
+        self.refresh_layout()
     
-    def force_ui_refresh(self):
-        """Force a comprehensive UI refresh"""
+    def refresh_layout(self):
+        """Refresh the layout after updates"""
         try:
             # Update all child widgets
             for column in self.columns:
                 column.content_text.update_idletasks()
-                column.content_text.update()
                 column.container.update_idletasks()
-                column.container.update()
             
             # Update frames
             self.columns_frame.update_idletasks()
-            self.columns_frame.update()
             self.container.update_idletasks()
-            self.container.update()
             
-            print(f"[DEBUG] UI refresh completed successfully")
+            # Update canvas scroll region and force full height usage
+            self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+            
+            # Ensure columns use full height
+            canvas_height = self.canvas.winfo_height()
+            if canvas_height > 400:
+                self.canvas.itemconfig(self.canvas_window, height=canvas_height)
+            
         except Exception as e:
-            print(f"[DEBUG] UI refresh failed: {e}")
+            print(f"[DEBUG] Layout refresh failed: {e}")
     
     def pack(self, **kwargs):
         """Pack the container"""
@@ -871,40 +921,40 @@ class ChatInterfaceView:
         self.setup_ui()
     
     def setup_ui(self):
-        """Setup the chat interface UI"""
-        # Top toolbar
-        toolbar_frame = tk.Frame(self.container, bg='#f8f9fa', height=50)
-        toolbar_frame.pack(fill=tk.X)
+        """Setup the chat interface UI with responsive design"""
+        # Top toolbar with flexible layout
+        toolbar_frame = tk.Frame(self.container, bg='#f8f9fa', height=45)
+        toolbar_frame.pack(fill=tk.X, padx=5, pady=(5, 0))
         toolbar_frame.pack_propagate(False)
         
         # Clear conversation button
         clear_btn = tk.Button(toolbar_frame, text="🔄 New Conversation",
-                            font=('Arial', 10),
+                            font=('Arial', 9),
                             bg='#f8f9fa', fg='#3498db',
                             relief='flat', cursor='hand2',
-                            padx=15, pady=10,
+                            padx=12, pady=8,
                             command=self.on_clear_callback)
-        clear_btn.pack(side=tk.LEFT, padx=10)
+        clear_btn.pack(side=tk.LEFT, padx=8)
         
         # Progress bar and status (initially hidden)
         self.progress_frame = tk.Frame(toolbar_frame, bg='#f8f9fa')
         
         self.progress_label = tk.Label(self.progress_frame, 
                                       text="Processing...",
-                                      font=('Arial', 9),
+                                      font=('Arial', 8),
                                       bg='#f8f9fa', fg='#7f8c8d')
-        self.progress_label.pack(side=tk.LEFT, padx=(10, 5))
+        self.progress_label.pack(side=tk.LEFT, padx=(8, 4))
         
         self.progress_bar = ttk.Progressbar(self.progress_frame, 
                                           mode='indeterminate',
-                                          length=200)
+                                          length=180)
         self.progress_bar.pack(side=tk.LEFT)
         
-        # Scrollable conversation area
+        # Scrollable conversation area with minimal padding
         conversation_container = tk.Frame(self.container, bg='white')
-        conversation_container.pack(fill=tk.BOTH, expand=True)
+        conversation_container.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
         
-        # Canvas for scrolling
+        # Canvas for scrolling with improved configuration
         self.canvas = tk.Canvas(conversation_container, bg='white',
                                highlightthickness=0)
         self.v_scrollbar = ttk.Scrollbar(conversation_container, 
@@ -913,15 +963,17 @@ class ChatInterfaceView:
         
         self.scrollable_frame = tk.Frame(self.canvas, bg='white')
         
+        # Configure scrolling with dynamic width
         self.scrollable_frame.bind(
             "<Configure>",
-            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+            self._on_scrollable_configure
         )
         
-        self.canvas.create_window((0, 0), window=self.scrollable_frame, 
-                                 anchor=tk.NW, width=self.canvas.winfo_width())
+        self.canvas_window = self.canvas.create_window((0, 0), window=self.scrollable_frame, 
+                                 anchor=tk.NW)
         self.canvas.configure(yscrollcommand=self.v_scrollbar.set)
         
+        # Pack with full expansion to use all available space
         self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.v_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
@@ -934,22 +986,25 @@ class ChatInterfaceView:
     
     def _on_canvas_configure(self, event):
         """Handle canvas resize"""
-        self.canvas.itemconfig(self.canvas.find_withtag("all")[0], 
-                              width=event.width)
+        self.canvas.itemconfig(self.canvas_window, width=event.width)
+    
+    def _on_scrollable_configure(self, event):
+        """Handle scrollable frame configuration"""
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
     
     def add_user_query(self, query: str):
         """Add a user query bubble to the conversation"""
         query_bubble = UserQueryBubble(self.scrollable_frame, query)
-        # Don't expand the query bubble, just fill horizontally
-        query_bubble.pack(fill=tk.X, pady=(10, 5))
+        # Pack with minimal padding to save space
+        query_bubble.pack(fill=tk.X, pady=(5, 2))
         self.conversation_widgets.append(query_bubble)
         self.auto_scroll_to_bottom()
     
     def add_model_responses(self, responses: List[ModelResponse]):
         """Add model responses row to the conversation"""
         response_row = ModelResponseRow(self.scrollable_frame, responses)
-        # Make the response row expand to fill available vertical space
-        response_row.pack(fill=tk.BOTH, expand=True, pady=(5, 10))
+        # Pack with full expansion and minimal padding to maximize space usage
+        response_row.pack(fill=tk.BOTH, expand=True, padx=2, pady=(2, 5))
         self.conversation_widgets.append(response_row)
         self.auto_scroll_to_bottom()
     
@@ -1158,87 +1213,7 @@ class ModelSelectionPanel:
         self.dialog.wait_window()
 
 
-def get_available_models(base_url: str) -> List[str]:
-    """Get available LLM models from Ollama."""
-    try:
-        response = requests.get(f"{base_url}/api/tags", timeout=10)
-        response.raise_for_status()
-        data = response.json()
-        
-        models = []
-        for model_info in data.get("models", []):
-            model_name = model_info["name"]
-            if not any(keyword in model_name.lower() 
-                      for keyword in ["embedding", "bge", "bert"]):
-                models.append(model_name)
-        
-        return sorted(models)
-    except Exception as e:
-        print(f"Error getting models: {e}")
-        return []
-
-
-def query_model(
-    base_url: str,
-    model_name: str,
-    prompt: str,
-    timeout: int = 120
-) -> Dict[str, Any]:
-    """Query a single model and return response with timing."""
-    url = f"{base_url}/api/generate"
-    
-    payload = {
-        "model": model_name,
-        "prompt": prompt,
-        "stream": False,
-        "options": {
-            "temperature": 0.7,
-            "num_predict": 512
-        }
-    }
-    
-    start_time = time.perf_counter()
-    
-    try:
-        response = requests.post(url, json=payload, timeout=timeout)
-        response.raise_for_status()
-        
-        end_time = time.perf_counter()
-        duration = end_time - start_time
-        
-        data = response.json()
-        response_text = data.get("response", "")
-        
-        # Token count
-        eval_count = data.get("eval_count", 0)
-        if eval_count == 0:
-            eval_count = len(response_text.split())
-        
-        tokens_per_second = eval_count / duration if duration > 0 else 0
-        
-        return {
-            "model": model_name,
-            "success": True,
-            "response": response_text,
-            "duration": duration,
-            "tokens": eval_count,
-            "tokens_per_second": tokens_per_second
-        }
-        
-    except requests.Timeout:
-        return {
-            "model": model_name,
-            "success": False,
-            "error": "Timeout",
-            "duration": timeout
-        }
-    except Exception as e:
-        return {
-            "model": model_name,
-            "success": False,
-            "error": str(e),
-            "duration": 0
-        }
+# Model querying functions moved to ollama_client.py
 
 
 def save_results_to_file(
@@ -1249,8 +1224,8 @@ def save_results_to_file(
 ) -> None:
     """Save results to a markdown file."""
     if filename is None:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"interactive_test_{timestamp}.md"
+        timestamp = create_timestamp()
+        filename = f"app_{timestamp}.md"
     
     output_file = output_dir / filename
     
@@ -1292,7 +1267,8 @@ class ModelComparisonGUI:
     def __init__(self):
         # Core properties
         self.base_url = "http://localhost:11434"
-        self.output_dir = Path("interactive_test_results")
+        self.client = OllamaClient(self.base_url)
+        self.output_dir = Path("app_results")
         self.output_dir.mkdir(exist_ok=True)
         self.models = []
         
@@ -1304,16 +1280,21 @@ class ModelComparisonGUI:
         self.load_models()
     
     def setup_gui(self):
-        """Setup the main GUI"""
+        """Setup the main GUI with responsive design"""
         self.root = tk.Tk()
-        self.root.title("AI Model Comparison - Find the best AI for you")
-        # Remove hardcoded window size - let it be resizable and adaptive
-        self.root.state('zoomed')  # Start maximized on Windows, or use normal size on other platforms
+        self.root.title("AI Model Comparison Tool")
+        
+        # Set minimum window size and start maximized
+        self.root.minsize(800, 600)
+        self.root.state('zoomed')  # Start maximized on Windows
         self.root.configure(bg='#f8f9fa')
         
-        # Main container
+        # Handle window resize events
+        self.root.bind('<Configure>', self.on_window_resize)
+        
+        # Main container with minimal padding to maximize space
         self.main_container = tk.Frame(self.root, bg='#f8f9fa')
-        self.main_container.pack(fill=tk.BOTH, expand=True)
+        self.main_container.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
         
         # Create views
         self.landing_view = LandingPageView(
@@ -1330,6 +1311,30 @@ class ModelComparisonGUI:
         
         # Show landing view initially
         self.switch_to_landing()
+    
+    def on_window_resize(self, event):
+        """Handle window resize events"""
+        if event.widget == self.root:
+            # Window was resized, update layouts
+            self.root.after_idle(self.update_layouts)
+    
+    def update_layouts(self):
+        """Update all layouts after window resize"""
+        try:
+            if hasattr(self, 'chat_view') and self.state_manager.is_chat_view():
+                # Update chat view layouts
+                for widget in self.chat_view.conversation_widgets:
+                    if hasattr(widget, 'refresh_layout'):
+                        widget.refresh_layout()
+                
+                # Force conversation area to use full height
+                self.chat_view.canvas.update_idletasks()
+                canvas_height = self.chat_view.canvas.winfo_height()
+                if canvas_height > 400:
+                    self.chat_view.canvas.itemconfig(self.chat_view.canvas_window, height=canvas_height)
+                    
+        except Exception as e:
+            print(f"[DEBUG] Layout update failed: {e}")
     
     def switch_to_landing(self):
         """Switch to landing page view"""
@@ -1445,7 +1450,7 @@ class ModelComparisonGUI:
         
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             future_to_model = {
-                executor.submit(query_model, self.base_url, model, prompt): model
+                executor.submit(self.client.query_model, model, prompt): model
                 for model in models
             }
             
@@ -1509,7 +1514,7 @@ class ModelComparisonGUI:
         """Load available models from Ollama"""
         def load_thread():
             try:
-                self.models = get_available_models(self.base_url)
+                self.models = self.client.get_available_models()
                 if self.models:
                     # Select all models by default
                     self.root.after(0, lambda: self.state_manager.set_selected_models(self.models))
@@ -1530,7 +1535,7 @@ class ModelComparisonGUI:
             return
         
         # Generate filename
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = create_timestamp()
         filename = f"conversation_{timestamp}.md"
         filepath = self.output_dir / filename
         

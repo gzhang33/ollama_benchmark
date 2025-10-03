@@ -1,273 +1,237 @@
-# Ollama 模型性能测试工具
+# Ollama Model Performance Testing Tool
 
-这是一个用于测试本地 Ollama 模型性能的工具包，帮助你选择最适合本地运行的模型。
+A comprehensive toolkit for testing local Ollama model performance, helping you choose the most suitable model for local deployment.
 
-## 🆕 新增功能亮点
+## 🆕 Key Features
 
-### 核心优化功能
-- **交互式并行测试**：单界面输入，所有模型并行回答，结果横向对比
-- **标准化速度测试**：15个标准测试问题，准确速度计算公式（总Token数÷总耗时）
-- **资源监控**：实时监控GPU/CPU使用情况
-- **测试工具菜单**：友好的菜单界面，快速选择测试工具
+### Core Optimization Features
+- **Interactive Parallel Testing**: Single interface input with all models responding in parallel for side-by-side comparison
+- **Standardized Speed Testing**: 15 standard test questions with accurate speed calculation formula (Total Tokens ÷ Total Time)
+- **Resource Monitoring**: Real-time GPU/CPU usage monitoring
+- **Test Tool Menu**: User-friendly menu interface for quick tool selection
 
-### 时间效率提升
-- **原质量测试**：49样本 × 90秒 = 73分钟/模型
-- **新交互测试**：1问题 × 30秒 = 0.5分钟（所有模型并行）
-- **节省时间：99%+**
+### Time Efficiency Improvements
+- **Original Quality Test**: 49 samples × 90 seconds = 73 minutes/model
+- **New Interactive Test**: 1 question × 30 seconds = 0.5 minutes (all models in parallel)
+- **Time Saved: 99%+**
 
-## 🔧 安装要求
+## 🔧 Installation Requirements
 
 - Python 3.8+
-- 已安装并运行的 Ollama 服务（默认 `http://localhost:11434`）
-- 依赖安装：
+- Ollama service installed and running (default `http://localhost:11434`)
+- Dependencies installation:
 ```bash
 pip install -r requirements.txt
 ```
 
-## 📁 文件结构
+## 📁 File Structure
 
 ```
 ollama_test/
-├── README.md                    # 本文件（完整使用指南）
-├── analyzer.py                  # 智能可视化分析工具
-├── complete_test.py             # 一键完整工作流程
-├── interactive_test.py          # 🆕 交互式并行测试工具
-├── speed_test.py                # 🆕 速度测试工具（含资源监控）
-├── test_menu.py                 # 🆕 测试工具菜单
-├── test_prompts.txt             # 🆕 标准化测试问题集
-├── requirements.txt             # Python 依赖包
-├── test_result/                 # 测试结果存储目录
-├── speed_test_results/          # 🆕 速度测试结果目录
-├── interactive_test_results/    # 🆕 交互式测试结果目录
-└── analysis_results/            # 分析报告目录
+├── README.md                    # This file (complete usage guide)
+├── ollama_client.py             # Ollama client module
+├── ollama_utils.py              # Utility functions module
+├── resource_monitor.py          # Resource monitoring module
+├── font_config.py               # Font configuration module
+├── visualization.py             # Visualization and analysis module
+├── app.py                       # 🆕 Interactive parallel testing tool
+├── speed_test.py                # 🆕 Speed testing tool (with resource monitoring)
+├── requirements.txt             # Python dependencies
+├── speed_test_results/          # 🆕 Speed test results directory
+├── app_results/                 # 🆕 Interactive test results directory
+└── analysis_results/            # Analysis reports directory
 ```
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 🆕 方法1：使用测试工具菜单（最简单）
+### 🆕 Method 1: Interactive Parallel Testing (Recommended for Model Comparison)
 ```bash
-python test_menu.py
+python app.py
 ```
-提供友好的菜单界面，选择需要的测试工具。
+**Core Features**:
+- Single interface prompt input
+- All models respond in parallel
+- Side-by-side result comparison
+- Real-time quality assessment of all model responses
 
-### 🆕 方法2：交互式并行测试（推荐用于模型对比）
+**Usage Example**:
 ```bash
-python interactive_test.py
-```
-**核心功能**：
-- 单界面输入提示词
-- 所有模型并行回答
-- 结果并排展示对比
-- 实时查看所有模型回答质量
-
-**使用示例**：
-```bash
-python interactive_test.py
-💬 Your prompt: 请解释什么是量子计算？
-# 等待所有模型并行回答，查看对比结果
+python app.py
+💬 Your prompt: Explain what quantum computing is?
+# Wait for all models to respond in parallel, view comparison results
 ```
 
-### 🆕 方法3：速度测试（推荐用于性能评估）
+### 🆕 Method 2: Speed Testing (Recommended for Performance Evaluation)
 ```bash
 python speed_test.py
 ```
-**核心功能**：
-- 15个标准化测试问题（简单/中等/复杂各5个）
-- 准确速度计算：总Token数 ÷ 总耗时
-- GPU/CPU资源监控
-- 详细报表生成（CSV + JSON）
+**Core Features**:
+- 3 standardized test questions (medium difficulty, ~400 token output)
+- Accurate speed calculation: Total Tokens ÷ Total Time
+- GPU/CPU resource monitoring
+- Detailed report generation (CSV + JSON)
 
-**测试问题集**：
-- 简单：你好、自我介绍、基础问答
-- 中等：编程任务、概念解释、算法实现
-- 复杂：架构设计、深度分析、技术解析
+**Test Question Set**:
+- Algorithm implementation tasks
+- Problem-solving challenges
+- Technical analysis requests
 
-**使用示例**：
+**Usage Example**:
 ```bash
-python speed_test.py                    # 测试所有模型
-python speed_test.py --model "gemma3:4b"  # 测试指定模型
+python speed_test.py                    # Test all models
+python speed_test.py --model "gemma3:4b"  # Test specific model
 ```
 
-### 方法4：一键完整工作流程
+## 📚 Tool Features
+
+### 🆕 New Tools
+
+#### 1. Interactive Parallel Testing (app.py)
+**Core Advantages**:
+- Replaces original quality testing, saves 99%+ time
+- Real-time comparison of all model response quality
+- Supports custom question testing
+
+**Parameter Description**:
+| Parameter | Default Value | Description |
+|-----------|---------------|-------------|
+| `--base-url` | http://localhost:11434 | Ollama service address |
+| `--prompt` | None | Single test prompt |
+| `--output-dir` | app_results | Result save directory |
+| `--max-workers` | 5 | Parallel worker threads |
+
+#### 2. Speed Testing (speed_test.py)
+**Core Advantages**:
+- Scientific speed calculation formula
+- Standardized test question set
+- Complete resource monitoring
+
+**Speed Calculation Formula**:
+```
+Accurate Average Speed (tokens/s) = Total Output Tokens from All Questions ÷ Total Time for All Questions (seconds)
+```
+
+**Output Files**:
+- `speed_test_details_[timestamp].csv` - Detailed test data
+- `speed_test_summary_[timestamp].csv` - Summary statistics table
+- `speed_test_results_[timestamp].json` - Complete JSON data
+
+**Parameter Description**:
+| Parameter | Default Value | Description |
+|-----------|---------------|-------------|
+| `--base-url` | http://localhost:11434 | Ollama service address |
+| `--model` | None | Specific model to test |
+| `--output-dir` | speed_test_results | Result save directory |
+| `--analysis-dir` | analysis_results | Analysis output directory |
+| `--skip-analysis` | False | Skip visualization and reporting |
+| `--collect-resources` | True | Collect GPU/CPU usage metrics |
+
+### Analysis Tools
+
+#### Visualization and Analysis (visualization.py)
+- **Intelligent Data Conversion**: Automatic JSON/CSV format recognition and conversion
+- **Performance Ranking**: Model ranking based on comprehensive scoring
+- **Visualization Charts**: Throughput, response time, radar chart comparisons
+- **Scenario Recommendations**: Best model recommendations for different use cases
+- **Detailed Reports**: Complete Markdown format analysis reports
+
+## 🎯 Usage Scenario Guide
+
+### Scenario 1: Quick Comparison of All Models' Response Quality
+**Recommended Tool**: `app.py`
 ```bash
-python complete_test.py
-```
-- 性能测试 + 分析报告
-
-### 方法5：分步执行
-```bash
-# 运行测试
-python speed_test.py
-
-# 自动分析
-python analyzer.py
+python app.py
+💬 Your prompt: Explain what quantum computing is?
+# View all models' response comparison
 ```
 
-## 📚 工具功能详解
-
-### 🆕 新增工具
-
-#### 1. 交互式并行测试（interactive_test.py）
-**核心优势**：
-- 替代原质量测试，节省99%+时间
-- 实时对比所有模型回答质量
-- 支持自定义问题测试
-
-**参数说明**：
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `--base-url` | http://localhost:11434 | Ollama 服务地址 |
-| `--prompt` | 无 | 单次测试的提示词 |
-| `--output-dir` | interactive_test_results | 结果保存目录 |
-| `--max-workers` | 5 | 并行工作线程数 |
-
-#### 2. 速度测试（speed_test.py）
-**核心优势**：
-- 科学的速度计算公式
-- 标准化测试问题集
-- 完整的资源监控
-
-**速度计算公式**：
-```
-准确平均速度（tokens/s）= 所有问题的输出Token总数 ÷ 所有问题的总耗时（秒）
-```
-
-**输出文件**：
-- `speed_test_details_[时间戳].csv` - 详细测试数据
-- `speed_test_summary_[时间戳].csv` - 汇总统计表格
-- `speed_test_results_[时间戳].json` - 完整JSON数据
-
-**参数说明**：
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `--base-url` | http://localhost:11434 | Ollama 服务地址 |
-| `--prompts-file` | test_prompts.txt | 测试问题集文件 |
-| `--model` | 无 | 指定测试的模型 |
-| `--output-dir` | speed_test_results | 结果保存目录 |
-
-#### 3. 测试工具菜单（test_menu.py）
-提供友好的菜单界面：
-- [1] 交互式并行测试
-- [2] 速度测试
-- [3] 原有性能测试
-- [4] 分析工具
-- [5] 完整测试流程
-
-### 原有工具
-
-#### 速度测试（speed_test.py）
-- **自动模型发现**：自动发现本地已安装的 LLM 模型（自动过滤 embedding 模型）
-- **标准化测试**：使用多难度级别的标准化问题集进行测试
-- **准确速度计算**：基于实际 token 数计算精确的速度指标
-- **资源监控**：实时监控 GPU/CPU 使用情况
-- **进度显示**：实时进度条和动态 ETA 计算
-
-#### 分析工具（analyzer.py）
-- **智能数据转换**：自动识别JSON/CSV格式并转换
-- **性能排名表**：基于综合评分的模型排名
-- **可视化图表**：吞吐量、响应时间、雷达图对比
-- **场景推荐**：不同使用场景下的最佳模型推荐
-- **详细报告**：完整的Markdown格式分析报告
-
-## 🎯 使用场景指南
-
-### 场景1：我想快速对比所有模型的回答质量
-**推荐工具**：`interactive_test.py`
-```bash
-python interactive_test.py
-💬 Your prompt: 请解释什么是量子计算？
-# 查看所有模型的回答对比
-```
-
-### 场景2：我想系统化评估模型速度性能
-**推荐工具**：`speed_test.py`
+### Scenario 2: Systematic Model Speed Performance Evaluation
+**Recommended Tool**: `speed_test.py`
 ```bash
 python speed_test.py
-# 运行15个标准测试，生成详细速度报告
+# Run 3 standard tests, generate detailed speed report
 ```
 
-### 场景3：我想对比两个特定模型的性能
-**推荐工具**：`speed_test.py` 分别测试
+### Scenario 3: Compare Specific Model Performance
+**Recommended Tool**: `speed_test.py` with specific model
 ```bash
 python speed_test.py --model "model1"
 python speed_test.py --model "model2"
-# 对比两次测试的CSV结果
+# Compare CSV results from both tests
 ```
 
-### 场景4：我想长期跟踪模型优化效果
-**推荐工具**：`speed_test.py` 定期运行
+### Scenario 4: Long-term Model Optimization Tracking
+**Recommended Tool**: `speed_test.py` with regular runs
 ```bash
-# 每周运行一次
+# Run weekly
 python speed_test.py
-# 历史数据保存在 speed_test_results/ 目录
+# Historical data saved in speed_test_results/ directory
 ```
 
-### 场景5：我不知道该用哪个工具
-**推荐工具**：`test_menu.py`
-```bash
-python test_menu.py
-# 通过菜单选择需要的功能
-```
+## 📊 Supported Models
 
-## 📊 支持的模型
+This toolkit can **dynamically detect** and test all locally installed LLM models (automatically filters out embedding models):
 
-该工具包可以**动态检测**并测试本地安装的所有 LLM 模型（自动过滤掉 embedding 模型）：
+- ✅ Dynamic model detection: Automatically discovers locally installed models
+- ✅ Smart filtering: Automatically excludes embedding models (bge, bert, etc.)
+- ✅ Supports all GGUF format models
 
-- ✅ 动态模型检测：自动发现本地已安装的模型
-- ✅ 智能过滤：自动排除 embedding 模型（bge, bert等）
-- ✅ 支持所有 GGUF 格式的模型
+**Currently Detected Models**:
+- Qwen series (qwen2.5, qwen2.5-instruct)
+- Gemma series (gemma3, gemma2)
+- DeepSeek series (deepseek-r1)
+- Llama series (llama3.1)
+- Mistral series (mistral)
+- Phi series (phi4-mini)
+- And other locally installed LLM models
 
-**当前检测到的模型**:
-- Qwen 系列 (qwen3, qwen2.5-coder)
-- Gemma 系列 (gemma3, gemma2)
-- DeepSeek 系列 (deepseek-r1)
-- GPT-OSS 系列
-- 以及其他本地安装的 LLM 模型
+## 🧭 Usage Guide
 
-## 🧭 使用指南
-
-1. 确保 Ollama 正在本地运行：
+1. Ensure Ollama is running locally:
 ```bash
 ollama serve
 ```
-2. 拉取并安装需要测试的模型：
+
+2. Pull and install models to test:
 ```bash
 ollama list
 ollama pull <model_name>
 ```
-3. 运行测试与分析（见"快速开始"章节）。
 
-## 📊 工具功能对比
+3. Run tests and analysis (see "Quick Start" section).
 
-| 功能 | speed_test.py | interactive_test.py |
-|------|---------------|---------------------|
-| 模型速度测试 | ✓✓✓ 专业 | - |
-| 交互式对比 | - | ✓✓✓ 核心功能 |
-| 并行执行 | - | ✓✓✓ 核心功能 |
-| 资源监控 | ✓✓✓ GPU+CPU | - |
-| 标准化问题集 | ✓✓✓ 16个标准问题 | - |
-| 准确速度公式 | - | ✓✓✓ 总Token÷总时间 | - |
-| 详细报表 | JSON | CSV+JSON+表格 | Markdown |
-| 横向对比展示 | - | - | ✓✓✓ 核心功能 |
-| 测试时间 | 30-60分钟 | 15-30分钟 | 0.5-2分钟 |
+## 📊 Tool Feature Comparison
 
-## 🧩 指标解释与示例
+| Feature | speed_test.py | app.py |
+|---------|---------------|---------------------|
+| Model Speed Testing | ✓✓✓ Professional | - |
+| Interactive Comparison | - | ✓✓✓ Core Feature |
+| Parallel Execution | - | ✓✓✓ Core Feature |
+| Resource Monitoring | ✓✓✓ GPU+CPU | - |
+| Standardized Question Set | ✓✓✓ 3 Standard Questions | - |
+| Accurate Speed Formula | ✓✓✓ Total Tokens ÷ Total Time | - |
+| Detailed Reports | CSV+JSON+Table | Markdown |
+| Side-by-side Comparison | - | ✓✓✓ Core Feature |
+| Test Time | 5-10 minutes | 0.5-2 minutes |
 
-### 关键指标
+## 🧩 Metrics Explanation and Examples
 
-- **tokens_per_second**：生成速度，数值越大越快
-- **ttft_ms_warm / cold**：首字延迟（热/冷启动）
-- **total_ms_warm / cold**：完成任务的总时间（热/冷启动）
-- **memory_usage_mb**：内存使用量
-- **response_length**：生成文本长度
+### Key Metrics
 
-### 交互式测试输出示例
+- **tokens_per_second**: Generation speed, higher values mean faster
+- **duration**: Total time to complete task
+- **output_tokens**: Number of tokens generated
+- **success_rate**: Percentage of successful test completions
+- **gpu_util**: GPU utilization percentage
+- **cpu_util**: CPU utilization percentage
+
+### Interactive Test Output Example
 ```
 ================================================================================
 MODEL RESPONSES COMPARISON
 ================================================================================
 
-Prompt: 请解释什么是量子计算？
+Prompt: Explain what quantum computing is?
 
 ================================================================================
 
@@ -277,7 +241,7 @@ Prompt: 请解释什么是量子计算？
     Speed: 37.10 tokens/s
     Response:
     ----------------------------------------------------------------------------
-    量子计算是一种利用量子力学原理进行计算的新型计算方式...
+    Quantum computing is a new type of computation that utilizes quantum mechanical principles...
     ----------------------------------------------------------------------------
 
 [2] Model: qwen2.5:14b
@@ -286,7 +250,7 @@ Prompt: 请解释什么是量子计算？
     Speed: 18.95 tokens/s
     Response:
     ----------------------------------------------------------------------------
-    量子计算是基于量子比特的计算技术...
+    Quantum computing is a computational technology based on quantum bits...
     ----------------------------------------------------------------------------
 
 ================================================================================
@@ -303,76 +267,87 @@ Speed statistics:
   Average: 28.56 tokens/s
 ```
 
-### 速度测试输出示例
+### Speed Test Output Example
 ```
 ================================================================================
 Testing model: gemma3:4b
 ================================================================================
 
-[SIMPLE] Testing 5 prompts...
-  1/5: 你好，你是谁？...
-    ✓ Tokens: 45, Duration: 1.23s, Speed: 36.59 tokens/s
-
-[MEDIUM] Testing 5 prompts...
-  1/5: 请用Python编写一个合并两个有序链表的函数...
+Testing 3 prompts...
+  1/3: Given two strings word1 and word2, calculate the minimum number of operations...
     ✓ Tokens: 156, Duration: 4.12s, Speed: 37.86 tokens/s
 
-[COMPLEX] Testing 5 prompts...
-  1/5: 撰写200字分析大模型落地应用的挑战与解决方案...
-    ✓ Tokens: 312, Duration: 8.45s, Speed: 36.92 tokens/s
+  2/3: Given a string containing only '(' and ')', find the length...
+    ✓ Tokens: 189, Duration: 5.23s, Speed: 36.14 tokens/s
+
+  3/3: Given a 2D matrix consisting of 'X' and 'O', find all regions...
+    ✓ Tokens: 203, Duration: 5.67s, Speed: 35.82 tokens/s
 
 ================================================================================
 Summary for gemma3:4b:
-  Total output tokens: 1245
-  Total duration: 34.56s
-  Average speed: 36.02 tokens/s
+  Total output tokens: 548
+  Total duration: 15.02s
+  Average speed: 36.48 tokens/s
 ================================================================================
 ```
 
-## 🎯 选择建议（参考）
+## 🎯 Selection Recommendations (Reference)
 
-1. **日常使用**：优先 tokens_per_second 较高且 memory_usage_mb 适中的模型
-2. **高质量需求**：可考虑 13B 以上参数规模的模型
-3. **速度优先**：选择 7B 级别的轻量模型
-4. **内存受限**：选择量化或轻量优化模型
+1. **Daily Use**: Prioritize models with higher tokens_per_second and moderate memory usage
+2. **High Quality Requirements**: Consider models with 13B+ parameters
+3. **Speed Priority**: Choose lightweight 7B-level models
+4. **Memory Constrained**: Choose quantized or lightweight optimized models
 
-## 🛠️ 故障排除
+## 🛠️ Troubleshooting
 
-如果遇到问题，请：
-1. 确保 Ollama 服务正在运行：`ollama serve`
-2. 检查模型是否已安装：`ollama list`
-3. 常见问题与建议：
-   - **无法连接到 Ollama 服务**：确认服务已启动并检查端口（默认 11434）
-   - **模型未找到**：先执行 `ollama pull <model_name>`，再 `ollama list` 验证
-   - **内存不足**：关闭占用内存的程序，改用更小或量化模型
-   - **测试超时**：个别模型需要更长时间，可适当提高脚本超时阈值
-   - **GPU监控不可用**：如果没有NVIDIA GPU或未安装nvidia-smi，会自动跳过GPU监控
-   - **并行测试速度慢**：减少并行工作线程数 `--max-workers 3`
+If you encounter issues:
 
-## ⚙️ 高级配置提示
+1. Ensure Ollama service is running: `ollama serve`
+2. Check if models are installed: `ollama list`
+3. Common issues and suggestions:
+   - **Cannot connect to Ollama service**: Confirm service is started and check port (default 11434)
+   - **Model not found**: First execute `ollama pull <model_name>`, then verify with `ollama list`
+   - **Insufficient memory**: Close memory-consuming programs, use smaller or quantized models
+   - **Test timeout**: Some models need more time, can increase script timeout threshold
+   - **GPU monitoring unavailable**: If no NVIDIA GPU or nvidia-smi not installed, GPU monitoring will be skipped automatically
+   - **Slow parallel testing**: Reduce parallel worker threads `--max-workers 3`
 
-- 在 `analyzer.py` 中可通过 `--weights` 调整评分权重以匹配业务侧重
-- 可增补自定义测试用例，调整生成长度（例如 `num_predict`）、温度 `temperature`、超时等
-- 编辑 `test_prompts.txt` 可以自定义速度测试的问题集
-- 所有测试结果都保存在对应的结果目录中，便于长期跟踪和分析
+## ⚙️ Advanced Configuration Tips
 
-## 🚀 快速命令参考
+- Adjust scoring weights in analysis modules to match business focus
+- Add custom test cases, adjust generation length (e.g., `num_predict`), temperature, timeout, etc.
+- All test results are saved in corresponding result directories for long-term tracking and analysis
+
+## 🚀 Quick Command Reference
 
 ```bash
-# 测试工具菜单（推荐新手）
-python test_menu.py
+# Interactive testing (recommended for model comparison)
+python app.py
 
-# 交互式测试（推荐用于模型对比）
-python interactive_test.py
-
-# 速度测试（推荐用于性能评估）
+# Speed testing (recommended for performance evaluation)
 python speed_test.py
 
-# 分析工具
-python analyzer.py
-
-# 完整流程
-python complete_test.py
+# Analysis and visualization
+python speed_test.py  # Automatically generates analysis after testing
 ```
+
+## 📋 Modular Architecture
+
+This project uses a modular architecture for better maintainability and code reuse:
+
+### Core Modules
+- `ollama_client.py`: Ollama API client functionality
+- `ollama_utils.py`: Data processing and utility functions
+- `resource_monitor.py`: GPU/CPU monitoring
+- `font_config.py`: Font configuration for visualization
+- `visualization.py`: Chart generation and analysis
+
+### Benefits
+- **Code Reusability**: Shared functionality across tools
+- **Maintainability**: Clear separation of concerns
+- **Extensibility**: Easy to add new features
+- **Backward Compatibility**: Existing code continues to work
+
+For detailed module information, see `MODULARIZATION_RULES.md`.
 
 ---

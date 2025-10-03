@@ -1,0 +1,100 @@
+{
+  "timestamp": "20251003_164548",
+  "total_models": 1,
+  "results": [
+    {
+      "model": "gemma3:4b",
+      "total_tokens": 1200,
+      "total_duration": 44.4324370000395,
+      "average_speed": 27.007296493751472,
+      "success_rate": 1.0,
+      "test_count": 3,
+      "details": [
+        {
+          "model": "gemma3:4b",
+          "prompt": "Given two strings word1 and word2, calculate the minimum number of operations required to convert word1 to word2. Allowed operations include inserting a character, deleting a character, and replacing a character. Please provide a complete Python implementation including algorithm explanation, time complexity and space complexity analysis. Limit output to 400 tokens.",
+          "output_tokens": 400,
+          "duration": 18.035743099986576,
+          "tokens_per_second": 22.178182389407496,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 58.0,
+                "memory_used": 6361.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 98.0,
+                "memory_used": 11250.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 59.6,
+          "cpu_util_after": 44.6,
+          "response_preview": "```python\ndef min_distance(word1, word2):\n  \"\"\"\n  Calculates the minimum edit distance between two strings.\n\n  Args:\n    word1: The first string.\n    word2: The second string.\n\n  Returns:\n    The mini"
+        },
+        {
+          "model": "gemma3:4b",
+          "prompt": "Given a string containing only '(' and ')', find the length of the longest valid (well-formed and continuous) parentheses substring. Please provide a Python solution including algorithm explanation, code implementation, test cases, and complexity analysis. Limit output to 400 tokens.",
+          "output_tokens": 400,
+          "duration": 12.963591400010046,
+          "tokens_per_second": 30.855646992984525,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 98.0,
+                "memory_used": 11250.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 98.0,
+                "memory_used": 11301.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 43.9,
+          "cpu_util_after": 44.2,
+          "response_preview": "```python\ndef longest_valid_parentheses(s):\n    \"\"\"\n    Finds the length of the longest valid (well-formed and continuous)\n    parentheses substring.\n\n    Algorithm: Uses a stack to keep track of unma"
+        },
+        {
+          "model": "gemma3:4b",
+          "prompt": "Given a 2D matrix consisting of 'X' and 'O', find all regions surrounded by 'X' and fill these regions' 'O' with 'X'. A surrounded region is one that is not connected to 'O' on the boundary. Please provide a complete Python implementation including algorithm explanation and complexity analysis. Limit output to 400 tokens.",
+          "output_tokens": 400,
+          "duration": 13.433102500042878,
+          "tokens_per_second": 29.777186617813957,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 98.0,
+                "memory_used": 11301.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 11187.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 41.8,
+          "cpu_util_after": 42.4,
+          "response_preview": "```python\ndef solve(board):\n    \"\"\"\n    Fills 'O' regions surrounded by 'X' in a 2D matrix.\n\n    Args:\n        board: A 2D list of strings ('X' or 'O').\n\n    Returns:\n        The modified board with s"
+        }
+      ]
+    }
+  ]
+}

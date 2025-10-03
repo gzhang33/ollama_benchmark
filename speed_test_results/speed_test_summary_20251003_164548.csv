@@ -1,0 +1,2 @@
+﻿model,output_tokens,total_duration,tokens_per_second,success_rate
+gemma3:4b,1200,44.43,27.01,1.00

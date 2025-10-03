@@ -1,0 +1,10 @@
+﻿model,output_tokens,total_duration,tokens_per_second,success_rate
+llama3.1:8b-instruct-q8_0,1200,45.41,26.43,1.00
+qwen2.5:14b-instruct-q5_K_M,1200,94.46,12.70,1.00
+deepseek-r1:8b,1200,27.14,44.21,1.00
+gemma3:4b,1200,21.06,56.99,1.00
+gemma3:12b,1200,53.35,22.49,1.00
+mistral:7b-instruct-v0.3-q5_K_M,1200,27.07,44.33,1.00
+qwen2.5:7b-instruct,1200,25.17,47.67,1.00
+deepseek-r1:7b,1200,25.34,47.36,1.00
+phi4-mini:3.8b,1200,19.10,62.84,1.00

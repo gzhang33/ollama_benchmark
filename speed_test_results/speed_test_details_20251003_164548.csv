@@ -1,0 +1,29 @@
+﻿model,prompt,output_tokens,duration,tokens_per_second,cpu_util_before,cpu_util_after,response_preview
+gemma3:4b,"Given two strings word1 and word2, calculate the minimum number of operations required to convert word1 to word2. Allowed operations include inserting a character, deleting a character, and replacing a character. Please provide a complete Python implementation including algorithm explanation, time complexity and space complexity analysis. Limit output to 400 tokens.",400,18.04,22.18,59.6,44.6,"```python
+def min_distance(word1, word2):
+  """"""
+  Calculates the minimum edit distance between two strings.
+
+  Args:
+    word1: The first string.
+    word2: The second string.
+
+  Returns:
+    The mini"
+gemma3:4b,"Given a string containing only '(' and ')', find the length of the longest valid (well-formed and continuous) parentheses substring. Please provide a Python solution including algorithm explanation, code implementation, test cases, and complexity analysis. Limit output to 400 tokens.",400,12.96,30.86,43.9,44.2,"```python
+def longest_valid_parentheses(s):
+    """"""
+    Finds the length of the longest valid (well-formed and continuous)
+    parentheses substring.
+
+    Algorithm: Uses a stack to keep track of unma"
+gemma3:4b,"Given a 2D matrix consisting of 'X' and 'O', find all regions surrounded by 'X' and fill these regions' 'O' with 'X'. A surrounded region is one that is not connected to 'O' on the boundary. Please provide a complete Python implementation including algorithm explanation and complexity analysis. Limit output to 400 tokens.",400,13.43,29.78,41.8,42.4,"```python
+def solve(board):
+    """"""
+    Fills 'O' regions surrounded by 'X' in a 2D matrix.
+
+    Args:
+        board: A 2D list of strings ('X' or 'O').
+
+    Returns:
+        The modified board with s"
