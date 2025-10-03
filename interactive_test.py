@@ -9,6 +9,7 @@ import concurrent.futures
 import re
 import threading
 import time
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -16,6 +17,117 @@ from typing import Any, Dict, List, Optional
 import requests
 import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox, filedialog
+
+
+@dataclass
+class ModelResponse:
+    """Data model for a single model's response"""
+    model: str
+    success: bool
+    response: str = ""
+    duration: float = 0.0
+    tokens: int = 0
+    tokens_per_second: float = 0.0
+    error: str = ""
+    
+    def is_loading(self) -> bool:
+        """Check if response is still loading"""
+        return not self.success and not self.error
+    
+    def has_error(self) -> bool:
+        """Check if response has an error"""
+        return bool(self.error)
+    
+    def to_markdown(self) -> str:
+        """Convert response to markdown format"""
+        if self.has_error():
+            return f"**Error**: {self.error}"
+        
+        md = f"**{self.model}**\n\n"
+        md += f"- Duration: {self.duration:.2f}s\n"
+        md += f"- Tokens: {self.tokens}\n"
+        md += f"- Speed: {self.tokens_per_second:.2f} tokens/s\n\n"
+        md += f"```\n{self.response}\n```\n"
+        return md
+
+
+@dataclass
+class ConversationEntry:
+    """Data model for a conversation entry (query + responses)"""
+    query: str
+    timestamp: datetime
+    responses: List[ModelResponse] = field(default_factory=list)
+    
+    def to_markdown(self) -> str:
+        """Convert conversation entry to markdown format"""
+        md = f"## Query ({self.timestamp.strftime('%Y-%m-%d %H:%M:%S')})\n\n"
+        md += f"{self.query}\n\n"
+        md += "### Responses\n\n"
+        for response in self.responses:
+            md += response.to_markdown() + "\n\n"
+        return md
+
+
+class StateManager:
+    """Manages application state including conversation history and view state"""
+    
+    def __init__(self):
+        self.current_view = "landing"  # "landing" or "chat"
+        self.conversation_history: List[ConversationEntry] = []
+        self.selected_models: List[str] = []
+    
+    def add_conversation_entry(self, query: str, responses: List[Dict[str, Any]]) -> None:
+        """Add a new conversation entry to history"""
+        model_responses = []
+        for resp in responses:
+            model_responses.append(ModelResponse(
+                model=resp.get("model", ""),
+                success=resp.get("success", False),
+                response=resp.get("response", ""),
+                duration=resp.get("duration", 0.0),
+                tokens=resp.get("tokens", 0),
+                tokens_per_second=resp.get("tokens_per_second", 0.0),
+                error=resp.get("error", "")
+            ))
+        
+        entry = ConversationEntry(
+            query=query,
+            timestamp=datetime.now(),
+            responses=model_responses
+        )
+        self.conversation_history.append(entry)
+    
+    def clear_conversation(self) -> None:
+        """Clear all conversation history"""
+        self.conversation_history = []
+    
+    def get_conversation_history(self) -> List[ConversationEntry]:
+        """Get the full conversation history"""
+        return self.conversation_history
+    
+    def set_selected_models(self, models: List[str]) -> None:
+        """Set the selected models"""
+        self.selected_models = models
+    
+    def get_selected_models(self) -> List[str]:
+        """Get the selected models"""
+        return self.selected_models
+    
+    def transition_to_chat(self) -> None:
+        """Transition to chat view"""
+        self.current_view = "chat"
+    
+    def transition_to_landing(self) -> None:
+        """Transition to landing view"""
+        self.current_view = "landing"
+    
+    def is_chat_view(self) -> bool:
+        """Check if current view is chat"""
+        return self.current_view == "chat"
+    
+    def is_landing_view(self) -> bool:
+        """Check if current view is landing"""
+        return self.current_view == "landing"
 
 
 class MarkdownRenderer:
@@ -175,6 +287,877 @@ class MarkdownRenderer:
                 self.text_widget.insert(tk.END, part)
 
 
+class LandingPageView:
+    """Landing page view with centered input and model selection"""
+    
+    def __init__(self, parent, on_submit_callback, on_model_select_callback):
+        self.parent = parent
+        self.on_submit_callback = on_submit_callback
+        self.on_model_select_callback = on_model_select_callback
+        self.selected_model_count = 0
+        
+        self.container = tk.Frame(parent, bg='#f8f9fa')
+        self.setup_ui()
+    
+    def setup_ui(self):
+        """Setup the landing page UI"""
+        # Center container with max width
+        center_frame = tk.Frame(self.container, bg='#f8f9fa')
+        center_frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        
+        # Model icons placeholder (simple text for MVP)
+        icons_label = tk.Label(center_frame, text="🤖 💬 🧠", 
+                              font=('Arial', 32),
+                              bg='#f8f9fa', fg='#2c3e50')
+        icons_label.pack(pady=(0, 20))
+        
+        # Title
+        title_label = tk.Label(center_frame, text="Find the best AI for you",
+                              font=('Arial', 24, 'bold'),
+                              bg='#f8f9fa', fg='#2c3e50')
+        title_label.pack(pady=(0, 10))
+        
+        # Subtitle
+        subtitle_label = tk.Label(center_frame, 
+                                 text="Compare multiple AI models side-by-side",
+                                 font=('Arial', 12),
+                                 bg='#f8f9fa', fg='#7f8c8d')
+        subtitle_label.pack(pady=(0, 40))
+        
+        # Input frame with icons
+        input_frame = tk.Frame(center_frame, bg='white', relief='solid', borderwidth=1)
+        input_frame.pack(fill=tk.X, padx=20, pady=(0, 20))
+        
+# Attachment functionality removed
+        
+        # Input entry
+        self.input_entry = tk.Entry(input_frame, font=('Arial', 12),
+                                   bg='white', fg='#2c3e50',
+                                   relief='flat', borderwidth=0)
+        self.input_entry.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=12)
+        self.input_entry.insert(0, "Ask anything...")
+        self.input_entry.bind('<FocusIn>', self._on_entry_focus_in)
+        self.input_entry.bind('<FocusOut>', self._on_entry_focus_out)
+        self.input_entry.bind('<Return>', lambda e: self._on_submit())
+        
+        # Send button (right)
+        send_btn = tk.Button(input_frame, text="➤", font=('Arial', 14),
+                           bg='white', fg='#3498db', relief='flat',
+                           cursor='hand2', padx=10,
+                           command=self._on_submit)
+        send_btn.pack(side=tk.RIGHT, padx=(0, 5))
+        
+        # Model selection dropdown button
+        model_btn_frame = tk.Frame(center_frame, bg='#f8f9fa')
+        model_btn_frame.pack(pady=(0, 10))
+        
+        self.model_select_btn = tk.Button(model_btn_frame, 
+                                         text="🎯 Select Models ▼",
+                                         font=('Arial', 11),
+                                         bg='#3498db', fg='white',
+                                         relief='flat', cursor='hand2',
+                                         padx=20, pady=8,
+                                         command=self.toggle_model_dropdown)
+        self.model_select_btn.pack()
+        
+        # Dropdown menu container (initially hidden)
+        self.dropdown_container = tk.Frame(center_frame, bg='white',
+                                          relief='solid', borderwidth=1)
+        self.dropdown_visible = False
+        
+        # Selected model count display
+        self.model_count_label = tk.Label(center_frame,
+                                         text="No models selected",
+                                         font=('Arial', 10),
+                                         bg='#f8f9fa', fg='#7f8c8d')
+        self.model_count_label.pack()
+    
+    def toggle_model_dropdown(self):
+        """Toggle the model selection dropdown"""
+        if self.dropdown_visible:
+            self.hide_dropdown()
+        else:
+            self.show_dropdown()
+    
+    def show_dropdown(self):
+        """Show the model selection dropdown"""
+        self.dropdown_visible = True
+        self.model_select_btn.config(text="🎯 Select Models ▲")
+        self.dropdown_container.pack(pady=(10, 0))
+        
+        # Trigger callback to populate dropdown
+        self.on_model_select_callback()
+    
+    def hide_dropdown(self):
+        """Hide the model selection dropdown"""
+        self.dropdown_visible = False
+        self.model_select_btn.config(text="🎯 Select Models ▼")
+        self.dropdown_container.pack_forget()
+    
+    def populate_dropdown(self, models: List[str], selected_models: List[str], on_change_callback):
+        """Populate the dropdown with model checkboxes"""
+        # Clear existing widgets
+        for widget in self.dropdown_container.winfo_children():
+            widget.destroy()
+        
+        # Create scrollable frame
+        canvas = tk.Canvas(self.dropdown_container, bg='white', 
+                          highlightthickness=0, height=200, width=300)
+        scrollbar = ttk.Scrollbar(self.dropdown_container, orient=tk.VERTICAL,
+                                 command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg='white')
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor=tk.NW)
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Add checkboxes for each model
+        self.model_vars = {}
+        for model in models:
+            var = tk.BooleanVar(value=model in selected_models)
+            self.model_vars[model] = var
+            
+            cb = ttk.Checkbutton(scrollable_frame, text=model, 
+                               variable=var,
+                               command=lambda: on_change_callback(self.get_selected_models()))
+            cb.pack(anchor=tk.W, pady=2, padx=10)
+        
+        # Buttons frame
+        btn_frame = tk.Frame(self.dropdown_container, bg='white')
+        btn_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+        tk.Button(btn_frame, text="Select All",
+                 font=('Arial', 9),
+                 bg='#3498db', fg='white',
+                 relief='flat', cursor='hand2',
+                 command=lambda: self.select_all_models(on_change_callback)).pack(side=tk.LEFT, padx=(0, 5))
+        
+        tk.Button(btn_frame, text="Clear All",
+                 font=('Arial', 9),
+                 bg='#95a5a6', fg='white',
+                 relief='flat', cursor='hand2',
+                 command=lambda: self.clear_all_models(on_change_callback)).pack(side=tk.LEFT)
+        
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+    
+    def get_selected_models(self) -> List[str]:
+        """Get currently selected models from dropdown"""
+        if not hasattr(self, 'model_vars'):
+            return []
+        return [model for model, var in self.model_vars.items() if var.get()]
+    
+    def select_all_models(self, on_change_callback):
+        """Select all models in dropdown"""
+        for var in self.model_vars.values():
+            var.set(True)
+        on_change_callback(self.get_selected_models())
+    
+    def clear_all_models(self, on_change_callback):
+        """Clear all model selections"""
+        for var in self.model_vars.values():
+            var.set(False)
+        on_change_callback(self.get_selected_models())
+    
+    def _on_entry_focus_in(self, event):
+        """Clear placeholder text on focus"""
+        if self.input_entry.get() == "Ask anything...":
+            self.input_entry.delete(0, tk.END)
+            self.input_entry.config(fg='#2c3e50')
+    
+    def _on_entry_focus_out(self, event):
+        """Restore placeholder text if empty"""
+        if not self.input_entry.get():
+            self.input_entry.insert(0, "Ask anything...")
+            self.input_entry.config(fg='#7f8c8d')
+    
+    def _on_submit(self):
+        """Handle submit button click"""
+        query = self.input_entry.get().strip()
+        if query and query != "Ask anything...":
+            self.on_submit_callback(query)
+    
+    def update_model_count(self, count: int):
+        """Update the selected model count display"""
+        self.selected_model_count = count
+        if count == 0:
+            self.model_count_label.config(text="No models selected")
+        elif count == 1:
+            self.model_count_label.config(text="1 model selected")
+        else:
+            self.model_count_label.config(text=f"{count} models selected")
+    
+    def get_input_text(self) -> str:
+        """Get the current input text"""
+        text = self.input_entry.get().strip()
+        return text if text != "Ask anything..." else ""
+    
+    def clear_input(self):
+        """Clear the input field"""
+        self.input_entry.delete(0, tk.END)
+        self.input_entry.insert(0, "Ask anything...")
+        self.input_entry.config(fg='#7f8c8d')
+    
+    def show(self):
+        """Show the landing page"""
+        self.container.pack(fill=tk.BOTH, expand=True)
+    
+    def hide(self):
+        """Hide the landing page"""
+        self.container.pack_forget()
+
+
+class BottomInputBar:
+    """Bottom input bar for follow-up queries in chat interface"""
+    
+    def __init__(self, parent, on_submit_callback):
+        self.parent = parent
+        self.on_submit_callback = on_submit_callback
+        self.is_enabled = True
+        
+        self.container = tk.Frame(parent, bg='white', height=70)
+        self.container.pack_propagate(False)
+        self.setup_ui()
+    
+    def setup_ui(self):
+        """Setup the bottom input bar UI"""
+        # Inner frame with border
+        inner_frame = tk.Frame(self.container, bg='white', 
+                              relief='solid', borderwidth=1)
+        inner_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+# Attachment functionality removed
+        
+        # Input entry
+        self.input_entry = tk.Entry(inner_frame, font=('Arial', 12),
+                                   bg='white', fg='#2c3e50',
+                                   relief='flat', borderwidth=0)
+        self.input_entry.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, 
+                             padx=10, pady=8)
+        self.input_entry.insert(0, "Ask followup...")
+        self.input_entry.bind('<FocusIn>', self._on_entry_focus_in)
+        self.input_entry.bind('<FocusOut>', self._on_entry_focus_out)
+        self.input_entry.bind('<Return>', lambda e: self._on_submit())
+        
+        # Send button (right)
+        self.send_btn = tk.Button(inner_frame, text="➤", 
+                                 font=('Arial', 14),
+                                 bg='white', fg='#3498db', 
+                                 relief='flat',
+                                 cursor='hand2', padx=10,
+                                 command=self._on_submit)
+        self.send_btn.pack(side=tk.RIGHT, padx=(0, 5))
+    
+    def _on_entry_focus_in(self, event):
+        """Clear placeholder text on focus"""
+        if self.input_entry.get() == "Ask followup...":
+            self.input_entry.delete(0, tk.END)
+            self.input_entry.config(fg='#2c3e50')
+    
+    def _on_entry_focus_out(self, event):
+        """Restore placeholder text if empty"""
+        if not self.input_entry.get():
+            self.input_entry.insert(0, "Ask followup...")
+            self.input_entry.config(fg='#7f8c8d')
+    
+    def _on_submit(self):
+        """Handle submit button click"""
+        if not self.is_enabled:
+            return
+        
+        query = self.input_entry.get().strip()
+        if query and query != "Ask followup...":
+            self.on_submit_callback(query)
+    
+    def get_input_text(self) -> str:
+        """Get the current input text"""
+        text = self.input_entry.get().strip()
+        return text if text != "Ask followup..." else ""
+    
+    def clear_input(self):
+        """Clear the input field"""
+        self.input_entry.delete(0, tk.END)
+        self.input_entry.insert(0, "Ask followup...")
+        self.input_entry.config(fg='#7f8c8d')
+    
+    def disable(self):
+        """Disable input during query processing"""
+        self.is_enabled = False
+        self.input_entry.config(state=tk.DISABLED)
+        self.send_btn.config(state=tk.DISABLED)
+    
+    def enable(self):
+        """Re-enable input after query completion"""
+        self.is_enabled = True
+        self.input_entry.config(state=tk.NORMAL)
+        self.send_btn.config(state=tk.NORMAL)
+        self.input_entry.focus_set()
+    
+    def show(self):
+        """Show the input bar"""
+        self.container.pack(side=tk.BOTTOM, fill=tk.X)
+    
+    def hide(self):
+        """Hide the input bar"""
+        self.container.pack_forget()
+
+
+class UserQueryBubble:
+    """User query bubble component for chat interface"""
+    
+    def __init__(self, parent, query_text: str):
+        self.parent = parent
+        self.query_text = query_text
+        
+        self.container = tk.Frame(parent, bg='white')
+        self.setup_ui()
+    
+    def setup_ui(self):
+        """Setup the query bubble UI"""
+        # Right-aligned container
+        bubble_container = tk.Frame(self.container, bg='white')
+        bubble_container.pack(anchor=tk.E, padx=20, pady=10)
+        
+        # Query bubble with background
+        bubble_frame = tk.Frame(bubble_container, bg='#e3f2fd', 
+                               relief='flat', borderwidth=0)
+        bubble_frame.pack()
+        
+        # Query text with wrapping
+        query_label = tk.Label(bubble_frame, text=self.query_text,
+                              font=('Arial', 11),
+                              bg='#e3f2fd', fg='#2c3e50',
+                              wraplength=400, justify=tk.LEFT,
+                              padx=15, pady=12)
+        query_label.pack()
+    
+    def pack(self, **kwargs):
+        """Pack the container"""
+        self.container.pack(**kwargs)
+
+
+class ModelResponseColumn:
+    """Model response column component showing individual model response"""
+    
+    def __init__(self, parent, model_response: ModelResponse):
+        self.parent = parent
+        self.model_response = model_response
+        
+        self.container = tk.Frame(parent, bg='white', 
+                                 relief='solid', borderwidth=1,
+                                 width=350)
+        # Remove pack_propagate(False) to allow natural sizing
+        self.setup_ui()
+    
+    def setup_ui(self):
+        """Setup the column UI"""
+        # Header with model name
+        header_frame = tk.Frame(self.container, bg='#f8f9fa', height=40)
+        header_frame.pack(fill=tk.X)
+        header_frame.pack_propagate(False)
+        
+        model_label = tk.Label(header_frame, 
+                              text=self.model_response.model,
+                              font=('Arial', 11, 'bold'),
+                              bg='#f8f9fa', fg='#2c3e50',
+                              padx=10)
+        model_label.pack(side=tk.LEFT, pady=10)
+        
+        # Content area (no individual scrolling) - expand to fill available space
+        self.content_text = tk.Text(
+            self.container,
+            font=('Arial', 10),
+            bg='white', fg='#2c3e50',
+            wrap=tk.WORD,
+            relief='flat',
+            padx=10, pady=10,
+            width=40    # Fixed width for consistent column sizing
+        )
+        self.content_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=(5, 0))
+        
+        # Footer with metrics
+        footer_frame = tk.Frame(self.container, bg='#f8f9fa', height=30)
+        footer_frame.pack(fill=tk.X, pady=(0, 5))
+        footer_frame.pack_propagate(False)
+        
+        self.metrics_label = tk.Label(footer_frame,
+                                     text="",
+                                     font=('Arial', 9),
+                                     bg='#f8f9fa', fg='#7f8c8d',
+                                     padx=10)
+        self.metrics_label.pack(side=tk.LEFT, pady=5)
+        
+        # Render content based on state
+        self.render_content()
+    
+    def render_content(self):
+        """Render content based on response state"""
+        print(f"[DEBUG] render_content: {self.model_response.model}, has_error={self.model_response.has_error()}, is_loading={self.model_response.is_loading()}, success={self.model_response.success}")
+        
+        # Ensure widget is in normal state before modifying
+        self.content_text.config(state=tk.NORMAL)
+        self.content_text.delete(1.0, tk.END)
+        
+        if self.model_response.has_error():
+            # Error state
+            print(f"[DEBUG] Rendering error state for {self.model_response.model}: {self.model_response.error}")
+            self.content_text.insert(tk.END, f"❌ Error\n\n{self.model_response.error}")
+            self.content_text.config(fg='#e74c3c')
+            self.metrics_label.config(text="Failed")
+        elif self.model_response.is_loading():
+            # Loading state
+            print(f"[DEBUG] Rendering loading state for {self.model_response.model}")
+            self.content_text.insert(tk.END, "⏳ Loading...")
+            self.content_text.config(fg='#7f8c8d')
+            self.metrics_label.config(text="Processing...")
+        else:
+            # Success state
+            print(f"[DEBUG] Rendering success state for {self.model_response.model}, response_len={len(self.model_response.response)}")
+            self.content_text.insert(tk.END, self.model_response.response)
+            self.content_text.config(fg='#2c3e50')
+            
+            # Format metrics
+            metrics_text = (f"{self.model_response.duration:.1f}s | "
+                          f"{self.model_response.tokens} tokens | "
+                          f"{self.model_response.tokens_per_second:.1f} tok/s")
+            self.metrics_label.config(text=metrics_text)
+            print(f"[DEBUG] Metrics set for {self.model_response.model}: {metrics_text}")
+        
+        # Keep widget in NORMAL state and force multiple updates
+        self.content_text.config(state=tk.NORMAL)
+        self.content_text.update_idletasks()
+        self.content_text.update()
+        
+        # Force parent container updates
+        self.container.update_idletasks()
+        self.container.update()
+        
+        print(f"[DEBUG] render_content completed for {self.model_response.model}")
+        print(f"[DEBUG] Text widget content length: {len(self.content_text.get(1.0, tk.END))}")
+        
+        # Additional debug: check if widget is visible
+        try:
+            print(f"[DEBUG] Widget visibility - winfo_viewable: {self.content_text.winfo_viewable()}")
+            print(f"[DEBUG] Widget geometry - width: {self.content_text.winfo_width()}, height: {self.content_text.winfo_height()}")
+        except:
+            print(f"[DEBUG] Could not get widget visibility info")
+    
+    def update_response(self, model_response: ModelResponse):
+        """Update the response and re-render"""
+        print(f"[DEBUG] ModelResponseColumn.update_response: {model_response.model}, success={model_response.success}")
+        self.model_response = model_response
+        self.content_text.config(state=tk.NORMAL)
+        self.render_content()
+        # Keep the widget in NORMAL state so content is visible
+        self.content_text.config(state=tk.NORMAL)
+        print(f"[DEBUG] ModelResponseColumn.update_response completed for {model_response.model}")
+    
+    def pack(self, **kwargs):
+        """Pack the container"""
+        self.container.pack(**kwargs)
+
+
+class ModelResponseRow:
+    """Horizontal row of model response columns"""
+    
+    def __init__(self, parent, responses: List[ModelResponse]):
+        self.parent = parent
+        self.responses = responses
+        self.columns = []
+        
+        # Remove fixed height - let it be adaptive
+        self.container = tk.Frame(parent, bg='white')
+        self.setup_ui()
+    
+    def setup_ui(self):
+        """Setup the horizontal response row UI with horizontal scrolling"""
+        print(f"[DEBUG] ModelResponseRow.setup_ui: Creating UI for {len(self.responses)} responses")
+        
+        # Create horizontal scrollable canvas for multiple models
+        self.canvas = tk.Canvas(self.container, bg='white', highlightthickness=0)
+        self.h_scrollbar = ttk.Scrollbar(self.container, orient=tk.HORIZONTAL, command=self.canvas.xview)
+        self.columns_frame = tk.Frame(self.canvas, bg='white')
+        
+        # Configure scrolling
+        self.columns_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        )
+        
+        self.canvas_window = self.canvas.create_window((0, 0), window=self.columns_frame, anchor=tk.NW)
+        self.canvas.configure(xscrollcommand=self.h_scrollbar.set)
+        
+        # Bind canvas resize to update frame height
+        def on_canvas_configure(event):
+            # Update the frame height to match canvas height
+            self.canvas.itemconfig(self.canvas_window, height=event.height)
+        
+        self.canvas.bind('<Configure>', on_canvas_configure)
+        
+        # Pack canvas and scrollbar
+        self.canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.h_scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
+        
+        # Create columns for each response
+        for i, response in enumerate(self.responses):
+            print(f"[DEBUG] Creating column {i} for {response.model}")
+            column = ModelResponseColumn(self.columns_frame, response)
+            # Set fixed width for consistent layout
+            column.container.config(width=350)
+            column.container.pack(side=tk.LEFT, padx=5, pady=5, fill=tk.Y)
+            column.container.pack_propagate(False)  # Maintain consistent width
+            self.columns.append(column)
+            print(f"[DEBUG] Column {i} created and packed")
+        
+        print(f"[DEBUG] ModelResponseRow.setup_ui completed with {len(self.columns)} columns")
+    
+    def update_responses(self, responses: List[ModelResponse]):
+        """Update all responses"""
+        print(f"[DEBUG] ModelResponseRow.update_responses called with {len(responses)} responses")
+        print(f"[DEBUG] Current columns count: {len(self.columns)}")
+        
+        self.responses = responses
+        for i, response in enumerate(responses):
+            print(f"[DEBUG] Updating column {i}: {response.model}")
+            if i < len(self.columns):
+                self.columns[i].update_response(response)
+                print(f"[DEBUG] Column {i} updated successfully")
+            else:
+                print(f"[DEBUG] WARNING: No column {i} available for response {response.model}")
+        
+        # Force comprehensive UI update
+        self.force_ui_refresh()
+        print(f"[DEBUG] Forced UI update completed")
+    
+    def force_ui_refresh(self):
+        """Force a comprehensive UI refresh"""
+        try:
+            # Update all child widgets
+            for column in self.columns:
+                column.content_text.update_idletasks()
+                column.content_text.update()
+                column.container.update_idletasks()
+                column.container.update()
+            
+            # Update frames
+            self.columns_frame.update_idletasks()
+            self.columns_frame.update()
+            self.container.update_idletasks()
+            self.container.update()
+            
+            print(f"[DEBUG] UI refresh completed successfully")
+        except Exception as e:
+            print(f"[DEBUG] UI refresh failed: {e}")
+    
+    def pack(self, **kwargs):
+        """Pack the container"""
+        self.container.pack(**kwargs)
+
+
+class ChatInterfaceView:
+    """Chat interface view with conversation history and bottom input"""
+    
+    def __init__(self, parent, on_submit_callback, on_clear_callback):
+        self.parent = parent
+        self.on_submit_callback = on_submit_callback
+        self.on_clear_callback = on_clear_callback
+        
+        self.container = tk.Frame(parent, bg='white')
+        self.conversation_widgets = []
+        self.setup_ui()
+    
+    def setup_ui(self):
+        """Setup the chat interface UI"""
+        # Top toolbar
+        toolbar_frame = tk.Frame(self.container, bg='#f8f9fa', height=50)
+        toolbar_frame.pack(fill=tk.X)
+        toolbar_frame.pack_propagate(False)
+        
+        # Clear conversation button
+        clear_btn = tk.Button(toolbar_frame, text="🔄 New Conversation",
+                            font=('Arial', 10),
+                            bg='#f8f9fa', fg='#3498db',
+                            relief='flat', cursor='hand2',
+                            padx=15, pady=10,
+                            command=self.on_clear_callback)
+        clear_btn.pack(side=tk.LEFT, padx=10)
+        
+        # Progress bar and status (initially hidden)
+        self.progress_frame = tk.Frame(toolbar_frame, bg='#f8f9fa')
+        
+        self.progress_label = tk.Label(self.progress_frame, 
+                                      text="Processing...",
+                                      font=('Arial', 9),
+                                      bg='#f8f9fa', fg='#7f8c8d')
+        self.progress_label.pack(side=tk.LEFT, padx=(10, 5))
+        
+        self.progress_bar = ttk.Progressbar(self.progress_frame, 
+                                          mode='indeterminate',
+                                          length=200)
+        self.progress_bar.pack(side=tk.LEFT)
+        
+        # Scrollable conversation area
+        conversation_container = tk.Frame(self.container, bg='white')
+        conversation_container.pack(fill=tk.BOTH, expand=True)
+        
+        # Canvas for scrolling
+        self.canvas = tk.Canvas(conversation_container, bg='white',
+                               highlightthickness=0)
+        self.v_scrollbar = ttk.Scrollbar(conversation_container, 
+                                        orient=tk.VERTICAL,
+                                        command=self.canvas.yview)
+        
+        self.scrollable_frame = tk.Frame(self.canvas, bg='white')
+        
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        )
+        
+        self.canvas.create_window((0, 0), window=self.scrollable_frame, 
+                                 anchor=tk.NW, width=self.canvas.winfo_width())
+        self.canvas.configure(yscrollcommand=self.v_scrollbar.set)
+        
+        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.v_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Bind canvas resize to update window width
+        self.canvas.bind('<Configure>', self._on_canvas_configure)
+        
+        # Bottom input bar
+        self.bottom_input = BottomInputBar(self.container, self.on_submit_callback)
+        self.bottom_input.show()
+    
+    def _on_canvas_configure(self, event):
+        """Handle canvas resize"""
+        self.canvas.itemconfig(self.canvas.find_withtag("all")[0], 
+                              width=event.width)
+    
+    def add_user_query(self, query: str):
+        """Add a user query bubble to the conversation"""
+        query_bubble = UserQueryBubble(self.scrollable_frame, query)
+        # Don't expand the query bubble, just fill horizontally
+        query_bubble.pack(fill=tk.X, pady=(10, 5))
+        self.conversation_widgets.append(query_bubble)
+        self.auto_scroll_to_bottom()
+    
+    def add_model_responses(self, responses: List[ModelResponse]):
+        """Add model responses row to the conversation"""
+        response_row = ModelResponseRow(self.scrollable_frame, responses)
+        # Make the response row expand to fill available vertical space
+        response_row.pack(fill=tk.BOTH, expand=True, pady=(5, 10))
+        self.conversation_widgets.append(response_row)
+        self.auto_scroll_to_bottom()
+    
+    def render_conversation(self, conversation_history: List[ConversationEntry]):
+        """Render the full conversation history"""
+        # Clear existing widgets
+        for widget in self.conversation_widgets:
+            if hasattr(widget, 'container'):
+                widget.container.destroy()
+        self.conversation_widgets = []
+        
+        # Render each conversation entry
+        for entry in conversation_history:
+            self.add_user_query(entry.query)
+            self.add_model_responses(entry.responses)
+    
+    def auto_scroll_to_bottom(self):
+        """Auto-scroll to the bottom of the conversation"""
+        self.canvas.update_idletasks()
+        self.canvas.yview_moveto(1.0)
+    
+    def clear_conversation(self):
+        """Clear all conversation widgets"""
+        for widget in self.conversation_widgets:
+            if hasattr(widget, 'container'):
+                widget.container.destroy()
+        self.conversation_widgets = []
+    
+    def disable_input(self):
+        """Disable input during query processing"""
+        self.bottom_input.disable()
+    
+    def enable_input(self):
+        """Enable input after query completion"""
+        self.bottom_input.enable()
+    
+    def clear_input(self):
+        """Clear the input field"""
+        self.bottom_input.clear_input()
+    
+    def show_progress(self, message: str = "Processing..."):
+        """Show progress bar with message"""
+        self.progress_label.config(text=message)
+        self.progress_frame.pack(side=tk.RIGHT, padx=10)
+        self.progress_bar.start()
+    
+    def hide_progress(self):
+        """Hide progress bar"""
+        self.progress_bar.stop()
+        self.progress_frame.pack_forget()
+    
+    def update_progress(self, message: str):
+        """Update progress message"""
+        self.progress_label.config(text=message)
+    
+    def show(self):
+        """Show the chat interface"""
+        self.container.pack(fill=tk.BOTH, expand=True)
+    
+    def hide(self):
+        """Hide the chat interface"""
+        self.container.pack_forget()
+
+
+class ModelSelectionPanel:
+    """Modal dialog for model selection"""
+    
+    def __init__(self, parent, available_models: List[str], 
+                 selected_models: List[str], on_confirm_callback):
+        self.parent = parent
+        self.available_models = available_models
+        self.selected_models = selected_models.copy()
+        self.on_confirm_callback = on_confirm_callback
+        self.model_vars = {}
+        
+        # Create modal dialog
+        self.dialog = tk.Toplevel(parent)
+        self.dialog.title("Select Models")
+        self.dialog.geometry("400x600")
+        self.dialog.transient(parent)
+        self.dialog.grab_set()
+        
+        self.setup_ui()
+    
+    def setup_ui(self):
+        """Setup the model selection dialog UI"""
+        # Header
+        header_frame = tk.Frame(self.dialog, bg='#f8f9fa', height=60)
+        header_frame.pack(fill=tk.X)
+        header_frame.pack_propagate(False)
+        
+        title_label = tk.Label(header_frame, 
+                              text="Select models to compare",
+                              font=('Arial', 14, 'bold'),
+                              bg='#f8f9fa', fg='#2c3e50')
+        title_label.pack(pady=20)
+        
+        # Button row for Select All / Deselect All
+        button_row = tk.Frame(self.dialog, bg='white', height=50)
+        button_row.pack(fill=tk.X, padx=20, pady=(10, 5))
+        button_row.pack_propagate(False)
+        
+        select_all_btn = tk.Button(button_row, text="Select All",
+                                   font=('Arial', 10),
+                                   bg='#3498db', fg='white',
+                                   relief='flat', cursor='hand2',
+                                   padx=15, pady=5,
+                                   command=self.select_all)
+        select_all_btn.pack(side=tk.LEFT, padx=(0, 10))
+        
+        deselect_all_btn = tk.Button(button_row, text="Deselect All",
+                                     font=('Arial', 10),
+                                     bg='#95a5a6', fg='white',
+                                     relief='flat', cursor='hand2',
+                                     padx=15, pady=5,
+                                     command=self.deselect_all)
+        deselect_all_btn.pack(side=tk.LEFT)
+        
+        # Model count label
+        self.count_label = tk.Label(button_row,
+                                   text=f"{len(self.selected_models)} selected",
+                                   font=('Arial', 10),
+                                   bg='white', fg='#7f8c8d')
+        self.count_label.pack(side=tk.RIGHT)
+        
+        # Scrollable checkbox list
+        list_container = tk.Frame(self.dialog, bg='white')
+        list_container.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
+        
+        canvas = tk.Canvas(list_container, bg='white', highlightthickness=0)
+        scrollbar = ttk.Scrollbar(list_container, orient=tk.VERTICAL,
+                                 command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg='white')
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor=tk.NW)
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Create checkboxes for each model
+        for model in self.available_models:
+            var = tk.BooleanVar(value=model in self.selected_models)
+            self.model_vars[model] = var
+            
+            cb = ttk.Checkbutton(scrollable_frame, text=model, 
+                               variable=var,
+                               command=self.update_count)
+            cb.pack(anchor=tk.W, pady=2, padx=5)
+        
+        # Confirm button at bottom
+        confirm_frame = tk.Frame(self.dialog, bg='white', height=70)
+        confirm_frame.pack(fill=tk.X, padx=20, pady=10)
+        confirm_frame.pack_propagate(False)
+        
+        confirm_btn = tk.Button(confirm_frame, text="Confirm Selection",
+                               font=('Arial', 11, 'bold'),
+                               bg='#27ae60', fg='white',
+                               relief='flat', cursor='hand2',
+                               padx=30, pady=10,
+                               command=self.confirm)
+        confirm_btn.pack(expand=True)
+    
+    def select_all(self):
+        """Select all models"""
+        for var in self.model_vars.values():
+            var.set(True)
+        self.update_count()
+    
+    def deselect_all(self):
+        """Deselect all models"""
+        for var in self.model_vars.values():
+            var.set(False)
+        self.update_count()
+    
+    def update_count(self):
+        """Update the selected count label"""
+        count = sum(1 for var in self.model_vars.values() if var.get())
+        self.count_label.config(text=f"{count} selected")
+    
+    def confirm(self):
+        """Confirm selection and close dialog"""
+        # Get selected models
+        selected = [model for model, var in self.model_vars.items() 
+                   if var.get()]
+        
+        # Validate at least one model is selected
+        if not selected:
+            messagebox.showwarning("Warning", 
+                                 "Please select at least one model",
+                                 parent=self.dialog)
+            return
+        
+        # Update selected models and call callback
+        self.selected_models = selected
+        self.on_confirm_callback(selected)
+        self.dialog.destroy()
+    
+    def show(self):
+        """Show the dialog (modal)"""
+        self.dialog.wait_window()
+
+
 def get_available_models(base_url: str) -> List[str]:
     """Get available LLM models from Ollama."""
     try:
@@ -304,445 +1287,165 @@ def save_results_to_file(
 
 
 class ModelComparisonGUI:
-    """GUI界面类"""
+    """Main GUI application with chat-based interface"""
     
     def __init__(self):
+        # Core properties
         self.base_url = "http://localhost:11434"
         self.output_dir = Path("interactive_test_results")
         self.output_dir.mkdir(exist_ok=True)
         self.models = []
-        self.current_results = []
-        self.view_mode = "vertical"  # "vertical" 或 "horizontal"
         
+        # State management
+        self.state_manager = StateManager()
+        
+        # Setup GUI
         self.setup_gui()
         self.load_models()
     
     def setup_gui(self):
-        """设置GUI界面"""
+        """Setup the main GUI"""
         self.root = tk.Tk()
-        self.root.title("模型对比工具 - Interactive Model Comparison")
-        self.root.geometry("1600x1000")
+        self.root.title("AI Model Comparison - Find the best AI for you")
+        # Remove hardcoded window size - let it be resizable and adaptive
+        self.root.state('zoomed')  # Start maximized on Windows, or use normal size on other platforms
         self.root.configure(bg='#f8f9fa')
         
-        # 设置现代化样式
-        self.setup_styles()
-        
-        # 创建主容器
+        # Main container
         self.main_container = tk.Frame(self.root, bg='#f8f9fa')
-        self.main_container.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        self.main_container.pack(fill=tk.BOTH, expand=True)
         
-        # 创建顶部标题栏
-        self.create_header()
-        
-        # 创建主内容区域
-        self.create_main_content()
-        
-        # 创建底部状态栏
-        self.create_status_bar()
-    
-    def setup_styles(self):
-        """设置现代化样式"""
-        style = ttk.Style()
-        
-        # 配置主题
-        style.theme_use('clam')
-        
-        # 自定义样式
-        style.configure('Title.TLabel', 
-                       background='#f8f9fa',
-                       foreground='#2c3e50',
-                       font=('Arial', 18, 'bold'))
-        
-        style.configure('Card.TFrame',
-                       background='white',
-                       relief='flat',
-                       borderwidth=1)
-        
-        style.configure('Primary.TButton',
-                       background='#3498db',
-                       foreground='white',
-                       font=('Arial', 10, 'bold'),
-                       padding=(20, 10))
-        
-        style.configure('Secondary.TButton',
-                       background='#95a5a6',
-                       foreground='white',
-                       font=('Arial', 10),
-                       padding=(15, 8))
-        
-        style.configure('Success.TButton',
-                       background='#27ae60',
-                       foreground='white',
-                       font=('Arial', 10),
-                       padding=(15, 8))
-        
-        style.map('Primary.TButton',
-                 background=[('active', '#2980b9')])
-        
-        style.map('Secondary.TButton',
-                 background=[('active', '#7f8c8d')])
-        
-        style.map('Success.TButton',
-                 background=[('active', '#229954')])
-    
-    def create_header(self):
-        """创建顶部标题栏"""
-        header_frame = tk.Frame(self.main_container, bg='white', height=80)
-        header_frame.pack(fill=tk.X, pady=(0, 20))
-        header_frame.pack_propagate(False)
-        
-        # 标题
-        title_label = ttk.Label(header_frame, text="🤖 模型对比工具", 
-                               style='Title.TLabel')
-        title_label.pack(expand=True)
-        
-        # 副标题
-        subtitle_label = ttk.Label(header_frame, 
-                                  text="Interactive Model Comparison",
-                                  background='white',
-                                  foreground='#7f8c8d',
-                                  font=('Arial', 12))
-        subtitle_label.pack()
-    
-    def create_main_content(self):
-        """创建主内容区域"""
-        content_frame = tk.Frame(self.main_container, bg='#f8f9fa')
-        content_frame.pack(fill=tk.BOTH, expand=True)
-        
-        # 左侧面板 - 输入和控制
-        self.create_left_panel(content_frame)
-        
-        # 右侧面板 - 结果显示
-        self.create_right_panel(content_frame)
-    
-    def create_left_panel(self, parent):
-        """创建左侧面板"""
-        left_panel = tk.Frame(parent, bg='#f8f9fa', width=400)
-        left_panel.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 20))
-        left_panel.pack_propagate(False)
-        
-        # 输入区域卡片
-        input_card = ttk.Frame(left_panel, style='Card.TFrame', padding=20)
-        input_card.pack(fill=tk.X, pady=(0, 20))
-        
-        # 输入区域标题
-        input_title = ttk.Label(input_card, text="📝 输入提示词", 
-                               background='white',
-                               foreground='#2c3e50',
-                               font=('Arial', 12, 'bold'))
-        input_title.pack(anchor=tk.W, pady=(0, 10))
-        
-        # 输入文本框
-        self.prompt_text = scrolledtext.ScrolledText(input_card, height=4, wrap=tk.WORD,
-                                                   font=('Arial', 11),
-                                                   bg='#f8f9fa',
-                                                   relief='flat',
-                                                   borderwidth=1)
-        self.prompt_text.pack(fill=tk.X, pady=(0, 15))
-        
-        # 按钮区域
-        button_frame = tk.Frame(input_card, bg='white')
-        button_frame.pack(fill=tk.X)
-        
-        self.query_button = ttk.Button(button_frame, text="🚀 开始查询", 
-                                      command=self.start_query, 
-                                      style='Primary.TButton')
-        self.query_button.pack(fill=tk.X, pady=(0, 10))
-        
-        # 次要按钮行
-        secondary_frame = tk.Frame(button_frame, bg='white')
-        secondary_frame.pack(fill=tk.X)
-        
-        self.clear_button = ttk.Button(secondary_frame, text="🗑️ 清空", 
-                                      command=self.clear_prompt,
-                                      style='Secondary.TButton')
-        self.clear_button.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
-        
-        self.save_button = ttk.Button(secondary_frame, text="💾 保存", 
-                                     command=self.save_results, 
-                                     state=tk.DISABLED,
-                                     style='Success.TButton')
-        self.save_button.pack(side=tk.RIGHT, fill=tk.X, expand=True, padx=(5, 0))
-        
-        # 进度区域
-        self.create_progress_section(left_panel)
-        
-        # 模型选择区域
-        self.create_model_selection(left_panel)
-    
-    def create_progress_section(self, parent):
-        """创建进度区域"""
-        progress_card = ttk.Frame(parent, style='Card.TFrame', padding=20)
-        progress_card.pack(fill=tk.X, pady=(0, 20))
-        
-        # 进度标题
-        progress_title = ttk.Label(progress_card, text="⏳ 查询状态", 
-                                  background='white',
-                                  foreground='#2c3e50',
-                                  font=('Arial', 12, 'bold'))
-        progress_title.pack(anchor=tk.W, pady=(0, 10))
-        
-        # 状态标签
-        self.progress_var = tk.StringVar(value="准备就绪")
-        self.progress_label = ttk.Label(progress_card, 
-                                       textvariable=self.progress_var,
-                                       background='white',
-                                       foreground='#27ae60',
-                                       font=('Arial', 10))
-        self.progress_label.pack(anchor=tk.W, pady=(0, 10))
-        
-        # 进度条
-        self.progress_bar = ttk.Progressbar(progress_card, mode='indeterminate',
-                                          style='TProgressbar')
-        self.progress_bar.pack(fill=tk.X)
-    
-    def create_model_selection(self, parent):
-        """创建模型选择区域"""
-        model_card = ttk.Frame(parent, style='Card.TFrame', padding=20)
-        model_card.pack(fill=tk.BOTH, expand=True)
-        
-        # 模型选择标题
-        model_title = ttk.Label(model_card, text="🎯 模型选择", 
-                               background='white',
-                               foreground='#2c3e50',
-                               font=('Arial', 12, 'bold'))
-        model_title.pack(anchor=tk.W, pady=(0, 15))
-        
-        # 模型统计
-        self.model_count_var = tk.StringVar(value="加载中...")
-        model_count_label = ttk.Label(model_card, 
-                                     textvariable=self.model_count_var,
-                                     background='white',
-                                     foreground='#7f8c8d',
-                                     font=('Arial', 10))
-        model_count_label.pack(anchor=tk.W, pady=(0, 10))
-        
-        # 全选/取消全选按钮
-        select_frame = tk.Frame(model_card, bg='white')
-        select_frame.pack(fill=tk.X, pady=(0, 15))
-        
-        ttk.Button(select_frame, text="全选", 
-                  command=self.select_all_models,
-                  style='Secondary.TButton').pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Button(select_frame, text="取消全选", 
-                  command=self.deselect_all_models,
-                  style='Secondary.TButton').pack(side=tk.LEFT)
-        
-        # 模型列表容器
-        self.models_container = tk.Frame(model_card, bg='white')
-        self.models_container.pack(fill=tk.BOTH, expand=True)
-        
-        self.model_vars = {}
-        self.model_checkboxes = {}
-    
-    def create_right_panel(self, parent):
-        """创建右侧面板"""
-        right_panel = tk.Frame(parent, bg='#f8f9fa')
-        right_panel.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
-        
-        # 结果显示卡片
-        results_card = ttk.Frame(right_panel, style='Card.TFrame', padding=20)
-        results_card.pack(fill=tk.BOTH, expand=True)
-        
-        # 结果标题和控制区域
-        title_frame = tk.Frame(results_card, bg='white')
-        title_frame.pack(fill=tk.X, pady=(0, 15))
-        
-        results_title = ttk.Label(title_frame, text="📊 模型响应对比", 
-                                 background='white',
-                                 foreground='#2c3e50',
-                                 font=('Arial', 12, 'bold'))
-        results_title.pack(side=tk.LEFT)
-        
-        # 视图切换按钮
-        view_frame = tk.Frame(title_frame, bg='white')
-        view_frame.pack(side=tk.RIGHT)
-        
-        self.view_mode_var = tk.StringVar(value="vertical")
-        ttk.Radiobutton(view_frame, text="垂直视图", variable=self.view_mode_var, 
-                       value="vertical", command=self.switch_view_mode,
-                       style='TRadiobutton').pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Radiobutton(view_frame, text="横向对比", variable=self.view_mode_var, 
-                       value="horizontal", command=self.switch_view_mode,
-                       style='TRadiobutton').pack(side=tk.LEFT)
-        
-        # 创建结果显示容器
-        self.results_container = tk.Frame(results_card, bg='white')
-        self.results_container.pack(fill=tk.BOTH, expand=True)
-        
-        # 垂直视图容器
-        self.vertical_container = tk.Frame(self.results_container, bg='white')
-        
-        # 创建滚动区域（垂直视图）
-        self.vertical_canvas = tk.Canvas(self.vertical_container, bg='white', highlightthickness=0)
-        self.vertical_scrollbar = ttk.Scrollbar(self.vertical_container, orient="vertical", command=self.vertical_canvas.yview)
-        self.scrollable_frame = tk.Frame(self.vertical_canvas, bg='white')
-        
-        self.scrollable_frame.bind(
-            "<Configure>",
-            lambda e: self.vertical_canvas.configure(scrollregion=self.vertical_canvas.bbox("all"))
+        # Create views
+        self.landing_view = LandingPageView(
+            self.main_container,
+            on_submit_callback=self.handle_landing_submit,
+            on_model_select_callback=self.show_model_selection
         )
         
-        self.vertical_canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-        self.vertical_canvas.configure(yscrollcommand=self.vertical_scrollbar.set)
+        self.chat_view = ChatInterfaceView(
+            self.main_container,
+            on_submit_callback=self.handle_chat_submit,
+            on_clear_callback=self.handle_clear_conversation
+        )
         
-        # 横向视图容器（Notebook）
-        self.horizontal_notebook = ttk.Notebook(self.results_container)
-        
-        # 默认显示垂直视图
-        self.vertical_container.pack(fill=tk.BOTH, expand=True)
+        # Show landing view initially
+        self.switch_to_landing()
     
-    def create_status_bar(self):
-        """创建底部状态栏"""
-        status_frame = tk.Frame(self.main_container, bg='#34495e', height=40)
-        status_frame.pack(fill=tk.X, pady=(20, 0))
-        status_frame.pack_propagate(False)
-        
-        self.status_var = tk.StringVar(value="正在加载模型...")
-        self.status_label = ttk.Label(status_frame, 
-                                     textvariable=self.status_var,
-                                     background='#34495e',
-                                     foreground='white',
-                                     font=('Arial', 10))
-        self.status_label.pack(side=tk.LEFT, padx=15, pady=10)
+    def switch_to_landing(self):
+        """Switch to landing page view"""
+        self.chat_view.hide()
+        self.landing_view.show()
+        self.state_manager.transition_to_landing()
     
-    def load_models(self):
-        """加载可用模型"""
-        def load_models_thread():
-            try:
-                self.models = get_available_models(self.base_url)
-                if self.models:
-                    self.root.after(0, self.update_model_selection)
-                    self.root.after(0, lambda: self.status_var.set(f"已加载 {len(self.models)} 个模型"))
-                else:
-                    self.root.after(0, lambda: self.status_var.set("未找到可用模型"))
-                    self.root.after(0, lambda: messagebox.showerror("错误", "未找到可用模型，请检查 Ollama 服务"))
-            except Exception as e:
-                self.root.after(0, lambda: self.status_var.set(f"加载模型失败: {str(e)}"))
-                self.root.after(0, lambda: messagebox.showerror("错误", f"加载模型失败: {str(e)}"))
-        
-        threading.Thread(target=load_models_thread, daemon=True).start()
+    def switch_to_chat(self):
+        """Switch to chat interface view"""
+        self.landing_view.hide()
+        self.chat_view.show()
+        self.state_manager.transition_to_chat()
     
-    def update_model_selection(self):
-        """更新模型选择界面"""
-        # 清除现有的复选框
-        for widget in self.models_container.winfo_children():
-            widget.destroy()
-        
-        self.model_vars = {}
-        self.model_checkboxes = {}
-        
-        # 更新模型计数
-        self.model_count_var.set(f"已加载 {len(self.models)} 个模型")
-        
-        # 创建模型复选框网格（垂直布局）
-        for i, model in enumerate(self.models):
-            var = tk.BooleanVar(value=True)
-            self.model_vars[model] = var
-            
-            # 创建模型项框架
-            model_frame = tk.Frame(self.models_container, bg='white')
-            model_frame.pack(fill=tk.X, pady=2)
-            
-            cb = ttk.Checkbutton(model_frame, text=model, variable=var,
-                               style='TCheckbutton')
-            cb.pack(side=tk.LEFT, anchor=tk.W)
-            self.model_checkboxes[model] = cb
-    
-    def select_all_models(self):
-        """全选模型"""
-        for var in self.model_vars.values():
-            var.set(True)
-    
-    def deselect_all_models(self):
-        """取消全选模型"""
-        for var in self.model_vars.values():
-            var.set(False)
-    
-    def get_selected_models(self):
-        """获取选中的模型"""
-        return [model for model, var in self.model_vars.items() if var.get()]
-    
-    def switch_view_mode(self):
-        """切换视图模式"""
-        new_mode = self.view_mode_var.get()
-        if new_mode != self.view_mode:
-            self.view_mode = new_mode
-            
-            # 清除当前显示
-            for widget in self.results_container.winfo_children():
-                widget.pack_forget()
-            
-            if self.view_mode == "vertical":
-                self.vertical_container.pack(fill=tk.BOTH, expand=True)
-                self.vertical_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-                self.vertical_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-            else:
-                self.horizontal_notebook.pack(fill=tk.BOTH, expand=True)
-            
-            # 重新显示当前结果
-            if self.current_results:
-                prompt = self.prompt_text.get(1.0, tk.END).strip()
-                self.display_results_gui(self.current_results, prompt)
-    
-    def clear_prompt(self):
-        """清空输入框"""
-        self.prompt_text.delete(1.0, tk.END)
-    
-    def start_query(self):
-        """开始查询"""
-        prompt = self.prompt_text.get(1.0, tk.END).strip()
-        if not prompt:
-            messagebox.showwarning("警告", "请输入提示词")
+    def show_model_selection(self):
+        """Show model selection dropdown"""
+        if not self.models:
+            messagebox.showwarning("Warning", "No models available. Please wait for models to load.")
+            self.landing_view.hide_dropdown()
             return
         
-        selected_models = self.get_selected_models()
+        # Populate the dropdown in landing view
+        self.landing_view.populate_dropdown(
+            self.models,
+            self.state_manager.get_selected_models(),
+            self.on_models_selected
+        )
+    
+    def on_models_selected(self, selected_models: List[str]):
+        """Handle model selection change"""
+        self.state_manager.set_selected_models(selected_models)
+        self.landing_view.update_model_count(len(selected_models))
+    
+    def handle_landing_submit(self, query: str):
+        """Handle query submission from landing page"""
+        # Validate models are selected
+        if not self.state_manager.get_selected_models():
+            messagebox.showwarning("Warning", "Please select at least one model first.")
+            return
+        
+        # Switch to chat view
+        self.switch_to_chat()
+        
+        # Execute query
+        self.execute_query(query)
+    
+    def handle_chat_submit(self, query: str):
+        """Handle query submission from chat interface"""
+        self.execute_query(query)
+    
+    def handle_clear_conversation(self):
+        """Handle clear conversation request"""
+        self.state_manager.clear_conversation()
+        self.chat_view.clear_conversation()
+        self.switch_to_landing()
+    
+    def execute_query(self, query: str):
+        """Execute a query against selected models"""
+        selected_models = self.state_manager.get_selected_models()
+        
+        print(f"[DEBUG] Executing query: {query}")
+        print(f"[DEBUG] Selected models: {selected_models}")
+        
         if not selected_models:
-            messagebox.showwarning("警告", "请至少选择一个模型")
+            messagebox.showwarning("Warning", "No models selected")
             return
         
-        # 禁用查询按钮
-        self.query_button.config(state=tk.DISABLED)
-        self.progress_bar.start()
-        self.progress_var.set(f"正在查询 {len(selected_models)} 个模型...")
+        # Add query bubble to chat
+        self.chat_view.add_user_query(query)
         
-        # 清空之前的结果
-        for widget in self.scrollable_frame.winfo_children():
-            widget.destroy()
+        # Create loading responses
+        loading_responses = [
+            ModelResponse(model=model, success=False, error="", response="Loading...")
+            for model in selected_models
+        ]
+        print(f"[DEBUG] Created {len(loading_responses)} loading responses")
+        self.chat_view.add_model_responses(loading_responses)
         
-        # 在新线程中执行查询
+        # Disable input and show progress
+        self.chat_view.disable_input()
+        self.chat_view.show_progress(f"Querying {len(selected_models)} models...")
+        
+        # Execute queries in background thread
         def query_thread():
             try:
-                results = self.parallel_query_all_models_gui(selected_models, prompt)
-                self.root.after(0, lambda: self.display_results_gui(results, prompt))
+                print(f"[DEBUG] Starting parallel query...")
+                self.root.after(0, lambda: self.chat_view.update_progress("Processing queries..."))
+                
+                results = self.parallel_query_models(selected_models, query)
+                print(f"[DEBUG] Query complete. Results: {len(results)} responses")
+                for r in results:
+                    print(f"[DEBUG]   - {r.get('model')}: success={r.get('success')}, response_len={len(r.get('response', ''))}")
+                
+                # Add to conversation history
+                self.root.after(0, lambda: self.chat_view.update_progress("Updating interface..."))
+                self.state_manager.add_conversation_entry(query, results)
+                
+                # Update UI with results
+                print(f"[DEBUG] Updating UI with results...")
+                self.root.after(0, lambda: self.update_latest_responses(results))
             except Exception as e:
-                self.root.after(0, lambda: messagebox.showerror("错误", f"查询失败: {str(e)}"))
+                print(f"[DEBUG] Query failed with error: {e}")
+                import traceback
+                traceback.print_exc()
+                self.root.after(0, lambda: messagebox.showerror("Error", f"Query failed: {str(e)}"))
             finally:
-                self.root.after(0, self.query_finished)
+                self.root.after(0, self.query_complete)
         
         threading.Thread(target=query_thread, daemon=True).start()
     
-    def query_finished(self):
-        """查询完成"""
-        self.progress_bar.stop()
-        self.progress_var.set("查询完成")
-        self.query_button.config(state=tk.NORMAL)
-        self.save_button.config(state=tk.NORMAL)
-    
-    def parallel_query_all_models_gui(self, models: List[str], prompt: str) -> List[Dict[str, Any]]:
-        """并行查询所有模型（GUI版本）"""
+    def parallel_query_models(self, models: List[str], prompt: str) -> List[Dict[str, Any]]:
+        """Query multiple models in parallel"""
         results = []
-        completed = 0
-        
-        def update_progress():
-            nonlocal completed
-            completed += 1
-            progress_text = f"正在查询模型... ({completed}/{len(models)})"
-            self.root.after(0, lambda: self.progress_var.set(progress_text))
         
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             future_to_model = {
-                executor.submit(query_model, self.base_url, model, prompt): model 
+                executor.submit(query_model, self.base_url, model, prompt): model
                 for model in models
             }
             
@@ -751,750 +1454,115 @@ class ModelComparisonGUI:
                 try:
                     result = future.result()
                     results.append(result)
-                    update_progress()
                 except Exception as e:
                     results.append({
                         "model": model,
                         "success": False,
                         "error": str(e)
                     })
-                    update_progress()
         
-        # 按模型名称排序
+        # Sort by model name
         results.sort(key=lambda x: x["model"])
-        self.current_results = results
         return results
     
-    def display_results_gui(self, results: List[Dict[str, Any]], prompt: str):
-        """在GUI中显示结果"""
-        if self.view_mode == "vertical":
-            self.display_vertical_results(results, prompt)
+    def update_latest_responses(self, results: List[Dict[str, Any]]):
+        """Update the latest response row with actual results"""
+        print(f"[DEBUG] update_latest_responses called with {len(results)} results")
+        
+        # Convert to ModelResponse objects
+        model_responses = []
+        for resp in results:
+            mr = ModelResponse(
+                model=resp.get("model", ""),
+                success=resp.get("success", False),
+                response=resp.get("response", ""),
+                duration=resp.get("duration", 0.0),
+                tokens=resp.get("tokens", 0),
+                tokens_per_second=resp.get("tokens_per_second", 0.0),
+                error=resp.get("error", "")
+            )
+            model_responses.append(mr)
+            print(f"[DEBUG]   Created ModelResponse: {mr.model}, success={mr.success}, response_len={len(mr.response)}, error={mr.error}")
+        
+        # Update the last response row
+        print(f"[DEBUG] Conversation widgets count: {len(self.chat_view.conversation_widgets)}")
+        if self.chat_view.conversation_widgets:
+            last_widget = self.chat_view.conversation_widgets[-1]
+            print(f"[DEBUG] Last widget type: {type(last_widget)}")
+            if isinstance(last_widget, ModelResponseRow):
+                print(f"[DEBUG] Updating ModelResponseRow with {len(model_responses)} responses")
+                last_widget.update_responses(model_responses)
+            else:
+                print(f"[DEBUG] WARNING: Last widget is not ModelResponseRow!")
         else:
-            self.display_horizontal_results(results, prompt)
+            print(f"[DEBUG] WARNING: No conversation widgets found!")
     
-    def display_vertical_results(self, results: List[Dict[str, Any]], prompt: str):
-        """显示垂直布局结果"""
-        # 清除之前的结果
-        for widget in self.scrollable_frame.winfo_children():
-            widget.destroy()
-        
-        # 显示提示词
-        prompt_frame = tk.Frame(self.scrollable_frame, bg='#f8f9fa', relief='flat', 
-                               borderwidth=1, highlightbackground='#e9ecef', 
-                               highlightthickness=1)
-        prompt_frame.pack(fill=tk.X, pady=(0, 15), padx=10)
-        
-        prompt_content = tk.Frame(prompt_frame, bg='#f8f9fa')
-        prompt_content.pack(fill=tk.X, padx=15, pady=15)
-        
-        prompt_title = tk.Label(prompt_content, text="📝 输入提示词", 
-                               bg='#f8f9fa', fg='#2c3e50', 
-                               font=('Arial', 12, 'bold'))
-        prompt_title.pack(anchor=tk.W, pady=(0, 10))
-        
-        prompt_label = tk.Label(prompt_content, text=prompt, wraplength=1200,
-                               bg='#f8f9fa', fg='#34495e', 
-                               font=('Arial', 11), justify=tk.LEFT)
-        prompt_label.pack(anchor=tk.W)
-        
-        successful_results = [r for r in results if r["success"]]
-        failed_results = [r for r in results if not r["success"]]
-        
-        # 显示成功的结果
-        for idx, result in enumerate(successful_results, 1):
-            self.create_vertical_result_frame(result, idx)
-        
-        # 显示失败的结果
-        if failed_results:
-            failed_card = tk.Frame(self.scrollable_frame, bg='#ffeaa7', relief='flat', 
-                                  borderwidth=1, highlightbackground='#e17055', 
-                                  highlightthickness=1)
-            failed_card.pack(fill=tk.X, pady=(0, 15), padx=10)
-            
-            failed_content = tk.Frame(failed_card, bg='#ffeaa7')
-            failed_content.pack(fill=tk.X, padx=15, pady=15)
-            
-            failed_title = tk.Label(failed_content, text="❌ 失败的模型", 
-                                   bg='#ffeaa7', fg='#d63031', 
-                                   font=('Arial', 12, 'bold'))
-            failed_title.pack(anchor=tk.W, pady=(0, 10))
-            
-            for result in failed_results:
-                error_label = tk.Label(failed_content, 
-                                      text=f"• {result['model']}: {result.get('error', 'Unknown error')}",
-                                      bg='#ffeaa7', fg='#d63031', font=('Arial', 10))
-                error_label.pack(anchor=tk.W, pady=2)
-        
-        # 显示统计信息
-        if successful_results:
-            self.create_summary_frame(successful_results, len(results))
+
     
-    def display_horizontal_results(self, results: List[Dict[str, Any]], prompt: str):
-        """显示横向布局结果（并排显示模式）"""
-        # 清除之前的结果
-        for widget in self.horizontal_notebook.winfo_children():
-            widget.destroy()
+    def query_complete(self):
+        """Handle query completion"""
+        self.chat_view.hide_progress()
+        self.chat_view.enable_input()
+        self.chat_view.clear_input()
+    
+    def load_models(self):
+        """Load available models from Ollama"""
+        def load_thread():
+            try:
+                self.models = get_available_models(self.base_url)
+                if self.models:
+                    # Select all models by default
+                    self.root.after(0, lambda: self.state_manager.set_selected_models(self.models))
+                    self.root.after(0, lambda: self.landing_view.update_model_count(len(self.models)))
+                else:
+                    self.root.after(0, lambda: messagebox.showerror("Error", "No models found. Please check Ollama service."))
+            except Exception as e:
+                self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to load models: {str(e)}"))
         
-        successful_results = [r for r in results if r["success"]]
-        failed_results = [r for r in results if not r["success"]]
+        threading.Thread(target=load_thread, daemon=True).start()
+    
+    def save_conversation(self):
+        """Save the current conversation to a markdown file"""
+        conversation_history = self.state_manager.get_conversation_history()
         
-        if not successful_results:
+        if not conversation_history:
+            messagebox.showinfo("Info", "No conversation to save")
             return
         
-        # 创建主容器
-        main_frame = tk.Frame(self.horizontal_notebook, bg='white')
-        main_frame.pack(fill=tk.BOTH, expand=True)
-        
-        # 显示提示词
-        self.create_horizontal_prompt_section(main_frame, prompt)
-        
-        # 创建模型结果并排显示区域
-        self.create_horizontal_models_section(main_frame, successful_results)
-        
-        # 显示失败模型
-        if failed_results:
-            self.create_horizontal_failed_section(main_frame, failed_results)
-        
-        # 显示统计摘要
-        self.create_horizontal_summary_section(main_frame, successful_results, len(results))
-    
-    def create_vertical_result_frame(self, result: Dict[str, Any], idx: int):
-        """创建垂直布局的结果框架"""
-        # 创建卡片容器
-        card_frame = tk.Frame(self.scrollable_frame, bg='white', relief='flat', 
-                             borderwidth=1, highlightbackground='#e9ecef', 
-                             highlightthickness=1)
-        card_frame.pack(fill=tk.X, pady=(0, 15), padx=10)
-        
-        # 卡片内容
-        content_frame = tk.Frame(card_frame, bg='white')
-        content_frame.pack(fill=tk.X, padx=15, pady=15)
-        
-        # 模型标题
-        title_frame = tk.Frame(content_frame, bg='white')
-        title_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        model_title = tk.Label(title_frame, text=f"[{idx}] {result['model']}", 
-                              bg='white', fg='#2c3e50', font=('Arial', 12, 'bold'))
-        model_title.pack(side=tk.LEFT)
-        
-        # 统计信息
-        stats_frame = tk.Frame(content_frame, bg='white')
-        stats_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        # 创建统计信息标签
-        stats_data = [
-            (f"⏱️ {result['duration']:.2f}s", "#f39c12"),
-            (f"📊 {result['tokens']} tokens", "#3498db"),
-            (f"🚀 {result['tokens_per_second']:.2f}/s", "#27ae60")
-        ]
-        
-        for i, (text, color) in enumerate(stats_data):
-            stat_label = tk.Label(stats_frame, text=text, bg='white', 
-                                 fg=color, font=('Arial', 9, 'bold'))
-            stat_label.pack(side=tk.LEFT, padx=(0, 20))
-        
-        # 响应内容（支持Markdown渲染）
-        response_frame = tk.Frame(content_frame, bg='white')
-        response_frame.pack(fill=tk.BOTH, expand=True)
-        
-        response_text = scrolledtext.ScrolledText(response_frame, height=8, wrap=tk.WORD, 
-                                                font=('Arial', 10),
-                                                bg='#f8f9fa', fg='#2c3e50',
-                                                relief='flat', borderwidth=1)
-        response_text.pack(fill=tk.BOTH, expand=True)
-        
-        # 使用Markdown渲染器
-        renderer = MarkdownRenderer(response_text)
-        renderer.render_markdown(result['response'])
-        response_text.config(state=tk.DISABLED)
-    
-    def create_horizontal_result_tab(self, result: Dict[str, Any], idx: int, prompt: str):
-        """创建横向布局的结果标签页"""
-        # 创建标签页框架
-        tab_frame = tk.Frame(self.horizontal_notebook, bg='white')
-        
-        # 添加标签页
-        tab_title = f"[{idx}] {result['model'][:15]}{'...' if len(result['model']) > 15 else ''}"
-        self.horizontal_notebook.add(tab_frame, text=tab_title)
-        
-        # 创建滚动区域
-        canvas = tk.Canvas(tab_frame, bg='white', highlightthickness=0)
-        scrollbar = ttk.Scrollbar(tab_frame, orient="vertical", command=canvas.yview)
-        scrollable_frame = tk.Frame(canvas, bg='white')
-        
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
-        
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
-        
-        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        # 提示词区域
-        prompt_frame = tk.Frame(scrollable_frame, bg='#f8f9fa', relief='flat', 
-                               borderwidth=1, highlightbackground='#e9ecef', 
-                               highlightthickness=1)
-        prompt_frame.pack(fill=tk.X, pady=(0, 15), padx=10)
-        
-        prompt_content = tk.Frame(prompt_frame, bg='#f8f9fa')
-        prompt_content.pack(fill=tk.X, padx=15, pady=15)
-        
-        prompt_title = tk.Label(prompt_content, text="📝 输入提示词", 
-                               bg='#f8f9fa', fg='#2c3e50', 
-                               font=('Arial', 12, 'bold'))
-        prompt_title.pack(anchor=tk.W, pady=(0, 10))
-        
-        prompt_label = tk.Label(prompt_content, text=prompt, wraplength=800,
-                               bg='#f8f9fa', fg='#34495e', 
-                               font=('Arial', 11), justify=tk.LEFT)
-        prompt_label.pack(anchor=tk.W)
-        
-        # 统计信息区域
-        stats_frame = tk.Frame(scrollable_frame, bg='#e8f4fd', relief='flat', 
-                              borderwidth=1, highlightbackground='#3498db', 
-                              highlightthickness=1)
-        stats_frame.pack(fill=tk.X, pady=(0, 15), padx=10)
-        
-        stats_content = tk.Frame(stats_frame, bg='#e8f4fd')
-        stats_content.pack(fill=tk.X, padx=15, pady=15)
-        
-        stats_title = tk.Label(stats_content, text="📊 性能统计", 
-                              bg='#e8f4fd', fg='#2c3e50', 
-                              font=('Arial', 12, 'bold'))
-        stats_title.pack(anchor=tk.W, pady=(0, 10))
-        
-        stats_data = [
-            (f"⏱️ 耗时: {result['duration']:.2f}s", "#f39c12"),
-            (f"📊 Token数: {result['tokens']}", "#3498db"),
-            (f"🚀 速度: {result['tokens_per_second']:.2f} tokens/s", "#27ae60")
-        ]
-        
-        stats_grid = tk.Frame(stats_content, bg='#e8f4fd')
-        stats_grid.pack(fill=tk.X)
-        
-        for i, (text, color) in enumerate(stats_data):
-            stat_label = tk.Label(stats_grid, text=text, bg='#e8f4fd', 
-                                 fg=color, font=('Arial', 10, 'bold'))
-            stat_label.pack(side=tk.LEFT, padx=(0, 30))
-        
-        # 响应内容区域
-        response_frame = tk.Frame(scrollable_frame, bg='white', relief='flat', 
-                                 borderwidth=1, highlightbackground='#e9ecef', 
-                                 highlightthickness=1)
-        response_frame.pack(fill=tk.BOTH, expand=True, padx=10)
-        
-        response_content = tk.Frame(response_frame, bg='white')
-        response_content.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
-        
-        response_title = tk.Label(response_content, text="🤖 模型响应", 
-                                 bg='white', fg='#2c3e50', 
-                                 font=('Arial', 12, 'bold'))
-        response_title.pack(anchor=tk.W, pady=(0, 10))
-        
-        # 响应文本（支持Markdown渲染）
-        response_text = scrolledtext.ScrolledText(response_content, wrap=tk.WORD, 
-                                                font=('Arial', 10),
-                                                bg='#f8f9fa', fg='#2c3e50',
-                                                relief='flat', borderwidth=1)
-        response_text.pack(fill=tk.BOTH, expand=True)
-        
-        # 使用Markdown渲染器
-        renderer = MarkdownRenderer(response_text)
-        renderer.render_markdown(result['response'])
-        response_text.config(state=tk.DISABLED)
-    
-    def create_summary_frame(self, successful_results: List[Dict[str, Any]], total_models: int):
-        """创建统计摘要框架"""
-        # 创建摘要卡片
-        summary_card = tk.Frame(self.scrollable_frame, bg='#f8f9fa', relief='flat', 
-                               borderwidth=1, highlightbackground='#3498db', 
-                               highlightthickness=2)
-        summary_card.pack(fill=tk.X, pady=(10, 0), padx=10)
-        
-        # 摘要内容
-        content_frame = tk.Frame(summary_card, bg='#f8f9fa')
-        content_frame.pack(fill=tk.X, padx=15, pady=15)
-        
-        # 摘要标题
-        summary_title = tk.Label(content_frame, text="📈 统计摘要", 
-                                bg='#f8f9fa', fg='#2c3e50', 
-                                font=('Arial', 12, 'bold'))
-        summary_title.pack(anchor=tk.W, pady=(0, 10))
-        
-        speeds = [r['tokens_per_second'] for r in successful_results]
-        durations = [r['duration'] for r in successful_results]
-        
-        # 找到最快和最慢的模型
-        fastest_model = successful_results[speeds.index(max(speeds))]
-        slowest_model = successful_results[speeds.index(min(speeds))]
-        fastest_duration_model = successful_results[durations.index(min(durations))]
-        slowest_duration_model = successful_results[durations.index(max(durations))]
-        
-        # 创建统计网格
-        stats_grid = tk.Frame(content_frame, bg='#f8f9fa')
-        stats_grid.pack(fill=tk.X)
-        
-        # 第一行：总体统计
-        overall_frame = tk.Frame(stats_grid, bg='#f8f9fa')
-        overall_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        overall_stats = [
-            (f"总模型: {total_models}", "#34495e"),
-            (f"成功: {len(successful_results)}", "#27ae60"),
-            (f"失败: {total_models - len(successful_results)}", "#e74c3c")
-        ]
-        
-        for text, color in overall_stats:
-            stat_label = tk.Label(overall_frame, text=text, bg='#f8f9fa', 
-                                 fg=color, font=('Arial', 10, 'bold'))
-            stat_label.pack(side=tk.LEFT, padx=(0, 20))
-        
-        # 第二行：速度统计
-        speed_frame = tk.Frame(stats_grid, bg='#f8f9fa')
-        speed_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        speed_stats = [
-            (f"🥇 最快: {max(speeds):.2f}/s ({fastest_model['model'][:15]}...)", "#27ae60"),
-            (f"🐌 最慢: {min(speeds):.2f}/s ({slowest_model['model'][:15]}...)", "#e74c3c"),
-            (f"📊 平均: {sum(speeds)/len(speeds):.2f}/s", "#3498db")
-        ]
-        
-        for text, color in speed_stats:
-            stat_label = tk.Label(speed_frame, text=text, bg='#f8f9fa', 
-                                 fg=color, font=('Arial', 9))
-            stat_label.pack(side=tk.LEFT, padx=(0, 15))
-        
-        # 第三行：耗时统计
-        duration_frame = tk.Frame(stats_grid, bg='#f8f9fa')
-        duration_frame.pack(fill=tk.X)
-        
-        duration_stats = [
-            (f"⚡ 最快: {min(durations):.2f}s ({fastest_duration_model['model'][:15]}...)", "#27ae60"),
-            (f"⏳ 最慢: {max(durations):.2f}s ({slowest_duration_model['model'][:15]}...)", "#e74c3c"),
-            (f"📊 平均: {sum(durations)/len(durations):.2f}s", "#3498db")
-        ]
-        
-        for text, color in duration_stats:
-            stat_label = tk.Label(duration_frame, text=text, bg='#f8f9fa', 
-                                 fg=color, font=('Arial', 9))
-            stat_label.pack(side=tk.LEFT, padx=(0, 15))
-    
-    def create_failed_models_tab(self, failed_results: List[Dict[str, Any]]):
-        """创建失败模型标签页"""
-        tab_frame = tk.Frame(self.horizontal_notebook, bg='white')
-        self.horizontal_notebook.add(tab_frame, text="❌ 失败模型")
-        
-        # 创建滚动区域
-        canvas = tk.Canvas(tab_frame, bg='white', highlightthickness=0)
-        scrollbar = ttk.Scrollbar(tab_frame, orient="vertical", command=canvas.yview)
-        scrollable_frame = tk.Frame(canvas, bg='white')
-        
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
-        
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
-        
-        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        # 失败信息区域
-        failed_frame = tk.Frame(scrollable_frame, bg='#ffeaa7', relief='flat', 
-                               borderwidth=1, highlightbackground='#e17055', 
-                               highlightthickness=1)
-        failed_frame.pack(fill=tk.X, pady=15, padx=15)
-        
-        failed_content = tk.Frame(failed_frame, bg='#ffeaa7')
-        failed_content.pack(fill=tk.X, padx=15, pady=15)
-        
-        failed_title = tk.Label(failed_content, text="❌ 失败的模型", 
-                               bg='#ffeaa7', fg='#d63031', 
-                               font=('Arial', 14, 'bold'))
-        failed_title.pack(anchor=tk.W, pady=(0, 15))
-        
-        for result in failed_results:
-            error_frame = tk.Frame(failed_content, bg='#ffeaa7')
-            error_frame.pack(fill=tk.X, pady=5)
-            
-            model_name = tk.Label(error_frame, text=f"• {result['model']}", 
-                                 bg='#ffeaa7', fg='#d63031', 
-                                 font=('Arial', 11, 'bold'))
-            model_name.pack(anchor=tk.W)
-            
-            error_msg = tk.Label(error_frame, text=f"  错误: {result.get('error', 'Unknown error')}", 
-                                bg='#ffeaa7', fg='#8b4513', 
-                                font=('Arial', 10))
-            error_msg.pack(anchor=tk.W, pady=(2, 10))
-    
-    def create_summary_tab(self, successful_results: List[Dict[str, Any]], total_models: int):
-        """创建统计摘要标签页"""
-        tab_frame = tk.Frame(self.horizontal_notebook, bg='white')
-        self.horizontal_notebook.add(tab_frame, text="📈 统计摘要")
-        
-        # 创建滚动区域
-        canvas = tk.Canvas(tab_frame, bg='white', highlightthickness=0)
-        scrollbar = ttk.Scrollbar(tab_frame, orient="vertical", command=canvas.yview)
-        scrollable_frame = tk.Frame(canvas, bg='white')
-        
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
-        
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
-        
-        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        # 摘要卡片
-        summary_card = tk.Frame(scrollable_frame, bg='#f8f9fa', relief='flat', 
-                               borderwidth=1, highlightbackground='#3498db', 
-                               highlightthickness=2)
-        summary_card.pack(fill=tk.X, pady=15, padx=15)
-        
-        summary_content = tk.Frame(summary_card, bg='#f8f9fa')
-        summary_content.pack(fill=tk.X, padx=20, pady=20)
-        
-        summary_title = tk.Label(summary_content, text="📈 统计摘要", 
-                                bg='#f8f9fa', fg='#2c3e50', 
-                                font=('Arial', 14, 'bold'))
-        summary_title.pack(anchor=tk.W, pady=(0, 15))
-        
-        speeds = [r['tokens_per_second'] for r in successful_results]
-        durations = [r['duration'] for r in successful_results]
-        
-        # 找到最快和最慢的模型
-        fastest_model = successful_results[speeds.index(max(speeds))]
-        slowest_model = successful_results[speeds.index(min(speeds))]
-        fastest_duration_model = successful_results[durations.index(min(durations))]
-        slowest_duration_model = successful_results[durations.index(max(durations))]
-        
-        # 总体统计
-        overall_frame = tk.Frame(summary_content, bg='#f8f9fa')
-        overall_frame.pack(fill=tk.X, pady=(0, 15))
-        
-        overall_title = tk.Label(overall_frame, text="📊 总体统计", 
-                                bg='#f8f9fa', fg='#2c3e50', 
-                                font=('Arial', 12, 'bold'))
-        overall_title.pack(anchor=tk.W, pady=(0, 10))
-        
-        overall_stats = [
-            (f"总模型数: {total_models}", "#34495e"),
-            (f"成功: {len(successful_results)}", "#27ae60"),
-            (f"失败: {total_models - len(successful_results)}", "#e74c3c")
-        ]
-        
-        for text, color in overall_stats:
-            stat_label = tk.Label(overall_frame, text=text, bg='#f8f9fa', 
-                                 fg=color, font=('Arial', 11, 'bold'))
-            stat_label.pack(anchor=tk.W, pady=2)
-        
-        # 速度统计
-        speed_frame = tk.Frame(summary_content, bg='#f8f9fa')
-        speed_frame.pack(fill=tk.X, pady=(0, 15))
-        
-        speed_title = tk.Label(speed_frame, text="🚀 速度统计", 
-                              bg='#f8f9fa', fg='#2c3e50', 
-                              font=('Arial', 12, 'bold'))
-        speed_title.pack(anchor=tk.W, pady=(0, 10))
-        
-        speed_stats = [
-            (f"🥇 最快速度: {max(speeds):.2f} tokens/s ({fastest_model['model']})", "#27ae60"),
-            (f"🐌 最慢速度: {min(speeds):.2f} tokens/s ({slowest_model['model']})", "#e74c3c"),
-            (f"📊 平均速度: {sum(speeds)/len(speeds):.2f} tokens/s", "#3498db")
-        ]
-        
-        for text, color in speed_stats:
-            stat_label = tk.Label(speed_frame, text=text, bg='#f8f9fa', 
-                                 fg=color, font=('Arial', 10))
-            stat_label.pack(anchor=tk.W, pady=2)
-        
-        # 耗时统计
-        duration_frame = tk.Frame(summary_content, bg='#f8f9fa')
-        duration_frame.pack(fill=tk.X)
-        
-        duration_title = tk.Label(duration_frame, text="⏱️ 耗时统计", 
-                                 bg='#f8f9fa', fg='#2c3e50', 
-                                 font=('Arial', 12, 'bold'))
-        duration_title.pack(anchor=tk.W, pady=(0, 10))
-        
-        duration_stats = [
-            (f"⚡ 最快完成: {min(durations):.2f}s ({fastest_duration_model['model']})", "#27ae60"),
-            (f"⏳ 最慢完成: {max(durations):.2f}s ({slowest_duration_model['model']})", "#e74c3c"),
-            (f"📊 平均耗时: {sum(durations)/len(durations):.2f}s", "#3498db")
-        ]
-        
-        for text, color in duration_stats:
-            stat_label = tk.Label(duration_frame, text=text, bg='#f8f9fa', 
-                                 fg=color, font=('Arial', 10))
-            stat_label.pack(anchor=tk.W, pady=2)
-    
-    def create_horizontal_prompt_section(self, parent, prompt: str):
-        """创建横向视图的提示词区域"""
-        prompt_frame = tk.Frame(parent, bg='#f8f9fa', relief='flat', 
-                               borderwidth=1, highlightbackground='#e9ecef', 
-                               highlightthickness=1)
-        prompt_frame.pack(fill=tk.X, pady=(0, 15), padx=15)
-        
-        prompt_content = tk.Frame(prompt_frame, bg='#f8f9fa')
-        prompt_content.pack(fill=tk.X, padx=15, pady=15)
-        
-        prompt_title = tk.Label(prompt_content, text="📝 输入提示词", 
-                               bg='#f8f9fa', fg='#2c3e50', 
-                               font=('Arial', 14, 'bold'))
-        prompt_title.pack(anchor=tk.W, pady=(0, 10))
-        
-        prompt_label = tk.Label(prompt_content, text=prompt, wraplength=1200,
-                               bg='#f8f9fa', fg='#34495e', 
-                               font=('Arial', 12), justify=tk.LEFT)
-        prompt_label.pack(anchor=tk.W)
-    
-    def create_horizontal_models_section(self, parent, successful_results: List[Dict[str, Any]]):
-        """创建横向视图的模型结果并排显示区域"""
-        # 创建滚动区域
-        canvas = tk.Canvas(parent, bg='white', highlightthickness=0)
-        scrollbar = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
-        scrollable_frame = tk.Frame(canvas, bg='white')
-        
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
-        
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
-        
-        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        # 创建模型结果并排显示
-        models_frame = tk.Frame(scrollable_frame, bg='white')
-        models_frame.pack(fill=tk.X, pady=(0, 15), padx=15)
-        
-        # 标题
-        models_title = tk.Label(models_frame, text="🤖 模型响应对比", 
-                               bg='white', fg='#2c3e50', 
-                               font=('Arial', 14, 'bold'))
-        models_title.pack(anchor=tk.W, pady=(0, 15))
-        
-        # 计算每行显示的模型数量（根据屏幕宽度调整）
-        models_per_row = min(3, len(successful_results))  # 最多3个模型并排
-        
-        # 创建模型结果网格
-        for i, result in enumerate(successful_results):
-            row = i // models_per_row
-            col = i % models_per_row
-            
-            # 创建单个模型结果框架
-            model_frame = self.create_horizontal_single_model_frame(models_frame, result, i + 1)
-            model_frame.grid(row=row, column=col, sticky=(tk.W, tk.E, tk.N, tk.S), 
-                           padx=5, pady=5)
-        
-        # 配置网格权重
-        for i in range(models_per_row):
-            models_frame.columnconfigure(i, weight=1)
-    
-    def create_horizontal_single_model_frame(self, parent, result: Dict[str, Any], idx: int):
-        """创建单个模型的横向显示框架"""
-        # 创建模型卡片
-        model_card = tk.Frame(parent, bg='white', relief='flat', 
-                             borderwidth=1, highlightbackground='#e9ecef', 
-                             highlightthickness=1)
-        
-        # 模型标题和统计信息
-        header_frame = tk.Frame(model_card, bg='#f8f9fa')
-        header_frame.pack(fill=tk.X, padx=10, pady=10)
-        
-        # 模型名称
-        model_title = tk.Label(header_frame, text=f"[{idx}] {result['model']}", 
-                              bg='#f8f9fa', fg='#2c3e50', 
-                              font=('Arial', 12, 'bold'))
-        model_title.pack(anchor=tk.W, pady=(0, 5))
-        
-        # 统计信息
-        stats_frame = tk.Frame(header_frame, bg='#f8f9fa')
-        stats_frame.pack(fill=tk.X)
-        
-        stats_data = [
-            (f"⏱️ {result['duration']:.2f}s", "#f39c12"),
-            (f"📊 {result['tokens']}", "#3498db"),
-            (f"🚀 {result['tokens_per_second']:.2f}/s", "#27ae60")
-        ]
-        
-        for text, color in stats_data:
-            stat_label = tk.Label(stats_frame, text=text, bg='#f8f9fa', 
-                                 fg=color, font=('Arial', 9, 'bold'))
-            stat_label.pack(anchor=tk.W, pady=1)
-        
-        # 响应内容区域
-        response_frame = tk.Frame(model_card, bg='white')
-        response_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
-        
-        # 响应文本（支持Markdown渲染）
-        response_text = scrolledtext.ScrolledText(response_frame, height=12, wrap=tk.WORD, 
-                                                font=('Arial', 10),
-                                                bg='#f8f9fa', fg='#2c3e50',
-                                                relief='flat', borderwidth=1)
-        response_text.pack(fill=tk.BOTH, expand=True)
-        
-        # 使用Markdown渲染器
-        renderer = MarkdownRenderer(response_text)
-        renderer.render_markdown(result['response'])
-        response_text.config(state=tk.DISABLED)
-        
-        return model_card
-    
-    def create_horizontal_failed_section(self, parent, failed_results: List[Dict[str, Any]]):
-        """创建横向视图的失败模型区域"""
-        failed_frame = tk.Frame(parent, bg='#ffeaa7', relief='flat', 
-                               borderwidth=1, highlightbackground='#e17055', 
-                               highlightthickness=1)
-        failed_frame.pack(fill=tk.X, pady=(0, 15), padx=15)
-        
-        failed_content = tk.Frame(failed_frame, bg='#ffeaa7')
-        failed_content.pack(fill=tk.X, padx=15, pady=15)
-        
-        failed_title = tk.Label(failed_content, text="❌ 失败的模型", 
-                               bg='#ffeaa7', fg='#d63031', 
-                               font=('Arial', 14, 'bold'))
-        failed_title.pack(anchor=tk.W, pady=(0, 10))
-        
-        for result in failed_results:
-            error_frame = tk.Frame(failed_content, bg='#ffeaa7')
-            error_frame.pack(fill=tk.X, pady=2)
-            
-            model_name = tk.Label(error_frame, text=f"• {result['model']}", 
-                                 bg='#ffeaa7', fg='#d63031', 
-                                 font=('Arial', 11, 'bold'))
-            model_name.pack(anchor=tk.W)
-            
-            error_msg = tk.Label(error_frame, text=f"  错误: {result.get('error', 'Unknown error')}", 
-                                bg='#ffeaa7', fg='#8b4513', 
-                                font=('Arial', 10))
-            error_msg.pack(anchor=tk.W, pady=(2, 5))
-    
-    def create_horizontal_summary_section(self, parent, successful_results: List[Dict[str, Any]], total_models: int):
-        """创建横向视图的统计摘要区域"""
-        summary_frame = tk.Frame(parent, bg='#f8f9fa', relief='flat', 
-                                borderwidth=1, highlightbackground='#3498db', 
-                                highlightthickness=2)
-        summary_frame.pack(fill=tk.X, pady=(0, 15), padx=15)
-        
-        summary_content = tk.Frame(summary_frame, bg='#f8f9fa')
-        summary_content.pack(fill=tk.X, padx=20, pady=20)
-        
-        summary_title = tk.Label(summary_content, text="📈 统计摘要", 
-                                bg='#f8f9fa', fg='#2c3e50', 
-                                font=('Arial', 14, 'bold'))
-        summary_title.pack(anchor=tk.W, pady=(0, 15))
-        
-        speeds = [r['tokens_per_second'] for r in successful_results]
-        durations = [r['duration'] for r in successful_results]
-        
-        # 找到最快和最慢的模型
-        fastest_model = successful_results[speeds.index(max(speeds))]
-        slowest_model = successful_results[speeds.index(min(speeds))]
-        fastest_duration_model = successful_results[durations.index(min(durations))]
-        slowest_duration_model = successful_results[durations.index(max(durations))]
-        
-        # 创建统计网格
-        stats_grid = tk.Frame(summary_content, bg='#f8f9fa')
-        stats_grid.pack(fill=tk.X)
-        
-        # 第一行：总体统计
-        overall_frame = tk.Frame(stats_grid, bg='#f8f9fa')
-        overall_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        overall_title = tk.Label(overall_frame, text="📊 总体统计", 
-                                bg='#f8f9fa', fg='#2c3e50', 
-                                font=('Arial', 12, 'bold'))
-        overall_title.pack(anchor=tk.W, pady=(0, 5))
-        
-        overall_stats = [
-            (f"总模型数: {total_models}", "#34495e"),
-            (f"成功: {len(successful_results)}", "#27ae60"),
-            (f"失败: {total_models - len(successful_results)}", "#e74c3c")
-        ]
-        
-        for text, color in overall_stats:
-            stat_label = tk.Label(overall_frame, text=text, bg='#f8f9fa', 
-                                 fg=color, font=('Arial', 11, 'bold'))
-            stat_label.pack(anchor=tk.W, pady=1)
-        
-        # 第二行：速度统计
-        speed_frame = tk.Frame(stats_grid, bg='#f8f9fa')
-        speed_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        speed_title = tk.Label(speed_frame, text="🚀 速度统计", 
-                              bg='#f8f9fa', fg='#2c3e50', 
-                              font=('Arial', 12, 'bold'))
-        speed_title.pack(anchor=tk.W, pady=(0, 5))
-        
-        speed_stats = [
-            (f"🥇 最快速度: {max(speeds):.2f} tokens/s ({fastest_model['model']})", "#27ae60"),
-            (f"🐌 最慢速度: {min(speeds):.2f} tokens/s ({slowest_model['model']})", "#e74c3c"),
-            (f"📊 平均速度: {sum(speeds)/len(speeds):.2f} tokens/s", "#3498db")
-        ]
-        
-        for text, color in speed_stats:
-            stat_label = tk.Label(speed_frame, text=text, bg='#f8f9fa', 
-                                 fg=color, font=('Arial', 10))
-            stat_label.pack(anchor=tk.W, pady=1)
-        
-        # 第三行：耗时统计
-        duration_frame = tk.Frame(stats_grid, bg='#f8f9fa')
-        duration_frame.pack(fill=tk.X)
-        
-        duration_title = tk.Label(duration_frame, text="⏱️ 耗时统计", 
-                                 bg='#f8f9fa', fg='#2c3e50', 
-                                 font=('Arial', 12, 'bold'))
-        duration_title.pack(anchor=tk.W, pady=(0, 5))
-        
-        duration_stats = [
-            (f"⚡ 最快完成: {min(durations):.2f}s ({fastest_duration_model['model']})", "#27ae60"),
-            (f"⏳ 最慢完成: {max(durations):.2f}s ({slowest_duration_model['model']})", "#e74c3c"),
-            (f"📊 平均耗时: {sum(durations)/len(durations):.2f}s", "#3498db")
-        ]
-        
-        for text, color in duration_stats:
-            stat_label = tk.Label(duration_frame, text=text, bg='#f8f9fa', 
-                                 fg=color, font=('Arial', 10))
-            stat_label.pack(anchor=tk.W, pady=1)
-    
-    def save_results(self):
-        """保存结果到文件"""
-        if not self.current_results:
-            messagebox.showwarning("警告", "没有结果可保存")
-            return
-        
-        prompt = self.prompt_text.get(1.0, tk.END).strip()
-        if not prompt:
-            prompt = "未保存的提示词"
-        
+        # Generate filename
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"interactive_test_{timestamp}.md"
-        filepath = filedialog.asksaveasfilename(
-            defaultextension=".md",
-            filetypes=[("Markdown files", "*.md"), ("All files", "*.*")],
-            initialvalue=filename,
-            initialdir=self.output_dir
-        )
+        filename = f"conversation_{timestamp}.md"
+        filepath = self.output_dir / filename
         
-        if filepath:
-            save_results_to_file(self.current_results, prompt, Path(filepath).parent, 
-                               Path(filepath).name)
-            messagebox.showinfo("成功", f"结果已保存到: {filepath}")
+        # Write conversation to file
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(f"# AI Model Comparison - Conversation\n\n")
+            f.write(f"**Date**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            f.write(f"**Models**: {', '.join(self.state_manager.get_selected_models())}\n\n")
+            f.write(f"---\n\n")
+            
+            # Write each conversation entry
+            for entry in conversation_history:
+                f.write(entry.to_markdown())
+                f.write(f"\n---\n\n")
+        
+        messagebox.showinfo("Success", f"Conversation saved to:\n{filepath}")
     
     def run(self):
-        """运行GUI"""
+        """Run the GUI application"""
         self.root.mainloop()
+
+
+# === OLD CODE REMOVED ===
+# All old methods from the previous implementation have been removed
+# The new chat-based interface uses the component classes defined above
+
+
+# Skipping to the correct main function below
+# (Old methods removed - approximately 1100 lines)
+
+
+# PLACEHOLDER - will be replaced with correct main function
 
 
 def main():

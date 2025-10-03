@@ -1,0 +1,2436 @@
+{
+  "timestamp": "20251003_000136",
+  "total_models": 9,
+  "results": [
+    {
+      "model": "llama3.1:8b-instruct-q8_0",
+      "total_tokens": 2494,
+      "total_duration": 96.96969200001331,
+      "average_speed": 25.719376318114506,
+      "test_count": 9,
+      "details": [
+        {
+          "model": "llama3.1:8b-instruct-q8_0",
+          "difficulty": "simple",
+          "prompt": "你好，你是谁？",
+          "output_tokens": 21,
+          "duration": 6.952601799974218,
+          "tokens_per_second": 3.020451998283272,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 0.0,
+                "memory_used": 6637.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 18.0,
+                "memory_used": 14722.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 2.3,
+          "cpu_util_after": 2.9,
+          "response_preview": "您好，我是 LLaMA，一款由 Meta 研发的神经式语言模型。"
+        },
+        {
+          "model": "llama3.1:8b-instruct-q8_0",
+          "difficulty": "simple",
+          "prompt": "你在使用什么模型？",
+          "output_tokens": 82,
+          "duration": 4.490341999975499,
+          "tokens_per_second": 18.261415277599664,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 38.0,
+                "memory_used": 14751.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 72.0,
+                "memory_used": 14751.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 2.6,
+          "cpu_util_after": 5.5,
+          "response_preview": "我可以用多种方式来回答这个问题。例如，我使用了以下模型：1) transformers：这是一种机器学习架构，可以处理输入的序列数据，如文本或语音信号。2) LSTM（长短期记忆）：这是一个神经网络架构，用于处理时间序列数据，特别是在自然语言处理中很有用。"
+        },
+        {
+          "model": "llama3.1:8b-instruct-q8_0",
+          "difficulty": "simple",
+          "prompt": "请用一句话介绍Python编程语言。",
+          "output_tokens": 27,
+          "duration": 2.9320058000157587,
+          "tokens_per_second": 9.208713025006595,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 0.0,
+                "memory_used": 14751.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 72.0,
+                "memory_used": 14755.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 2.5,
+          "cpu_util_after": 12.5,
+          "response_preview": "Python是一种高级通用目的编程语言，广泛用于web开发、科学计算、数据分析等领域。"
+        },
+        {
+          "model": "llama3.1:8b-instruct-q8_0",
+          "difficulty": "medium",
+          "prompt": "请用Python编写一个合并两个有序链表的函数。",
+          "output_tokens": 470,
+          "duration": 15.87728590000188,
+          "tokens_per_second": 29.60203670577881,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 0.0,
+                "memory_used": 14760.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 71.0,
+                "memory_used": 14751.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 10.4,
+          "cpu_util_after": 5.4,
+          "response_preview": "**合并有序链表**\n================\n\n以下是合并两个有序链表的 Python 函数：\n\n```python\nclass ListNode:\n    def __init__(self, x):\n        self.val = x\n        self.next = None\n\ndef mergeTwoLists(l1, l2):\n    \"\"\"\n    合并两个有序链"
+        },
+        {
+          "model": "llama3.1:8b-instruct-q8_0",
+          "difficulty": "medium",
+          "prompt": "什么是REST API？请简要说明其核心原则。",
+          "output_tokens": 206,
+          "duration": 8.318433000007644,
+          "tokens_per_second": 24.764279522334398,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 71.0,
+                "memory_used": 14758.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 70.0,
+                "memory_used": 14755.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 3.5,
+          "cpu_util_after": 5.7,
+          "response_preview": "REST（Representational State of Resource）是一种基于HTTP的软件架构风格，它定义了一组规则来处理Web资源之间的交互。它以资源来组织系统中的信息，通过这些资源实现不同的操作，如创建、读取、更新和删除。\n\n核心原则包括：\n\n1.  资源：REST API以资源为中心，而不是以函数或方法为中心。\n2.  客户端-服务器架构：分离客户端和服务端，以便更方便地重用服"
+        },
+        {
+          "model": "llama3.1:8b-instruct-q8_0",
+          "difficulty": "medium",
+          "prompt": "如何优化数据库查询性能？请给出3个具体建议。",
+          "output_tokens": 196,
+          "duration": 8.206203699985053,
+          "tokens_per_second": 23.884369333941464,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 6.0,
+                "memory_used": 14759.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 71.0,
+                "memory_used": 14771.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 3.6,
+          "cpu_util_after": 12.7,
+          "response_preview": "以下是三种具体方法可以帮助你提高数据库的性能：\n\n1.  **合理索引设置**：创建合适的索引可以显著减少数据库执行查询所需的时间。如果数据库经常访问某些列，考虑为这些列添加索引。索引还可以用于优化 JOIN 和子查询。\n2.  **避免全表扫描**：尽量避免执行全表扫描，因为它会对数据库性能产生很大的负担。通过使用索引、限制 WHERE 子句中的条件和正确利用 GROUP BY 和 HAVING"
+        },
+        {
+          "model": "llama3.1:8b-instruct-q8_0",
+          "difficulty": "complex",
+          "prompt": "分析微服务架构与单体架构的优缺点，并给出在不同业务场景下的选择建议。",
+          "output_tokens": 512,
+          "duration": 17.304965600022115,
+          "tokens_per_second": 29.586883431848353,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 71.0,
+                "memory_used": 14772.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 72.0,
+                "memory_used": 14775.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 11.1,
+          "cpu_util_after": 2.2,
+          "response_preview": "**微服务架构**\n\n### 优点：\n\n1.  **更高的可伸缩性和灵活性**: 微服务架构允许独立部署和扩展每个服务，使其成为适应快速变化的业务需求的理想选择。\n2.  **更好的弹性和容错能力**: 在微服务架构中，如果一个服务出现问题，其他服务不会受到影响，可以继续提供服务。\n3.  **更容易进行维护和升级**: 各个服务独立部署，更新或维护时不会对整个系统造成影响。\n4.  **更好的适"
+        },
+        {
+          "model": "llama3.1:8b-instruct-q8_0",
+          "difficulty": "complex",
+          "prompt": "编写一个完整的Python装饰器，实现函数执行时间统计、异常捕获和日志记录功能。",
+          "output_tokens": 468,
+          "duration": 15.684064300032333,
+          "tokens_per_second": 29.839204369943523,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 0.0,
+                "memory_used": 14766.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 69.0,
+                "memory_used": 14764.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 4.3,
+          "cpu_util_after": 4.3,
+          "response_preview": "```python\nimport logging\nimport time\nfrom functools import wraps\n\n# 配置日志输出格式\nlogging.basicConfig(level=logging.INFO,\n                    format='%(asctime)s %(levelname)s: %(message)s',\n              "
+        },
+        {
+          "model": "llama3.1:8b-instruct-q8_0",
+          "difficulty": "complex",
+          "prompt": "深度解析Transformer架构的工作原理，重点说明自注意力机制和位置编码的作用。",
+          "output_tokens": 512,
+          "duration": 17.20378989999881,
+          "tokens_per_second": 29.760884257255164,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 69.0,
+                "memory_used": 14757.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 64.0,
+                "memory_used": 14760.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 2.7,
+          "cpu_util_after": 13.2,
+          "response_preview": "Transformer架构是一种流行的神经网络模型，特别是在自然语言处理领域，它的主要特点是引入了自注意力机制和位置编码两个关键创新。\n\n**1. 自注意力机制**\n\n自注意力机制（Self-Attention）是 Transformer 架构中的核心组成部分。它允许模型同时对输入序列进行编码，将每个元素的信息与其他所有元素相关联。这与传统的循环神经网络（RNN）和卷积神经网络（CNN）不同，后者"
+        }
+      ]
+    },
+    {
+      "model": "qwen2.5:14b-instruct-q5_K_M",
+      "total_tokens": 2853,
+      "total_duration": 206.2022536000004,
+      "average_speed": 13.835930258717573,
+      "test_count": 9,
+      "details": [
+        {
+          "model": "qwen2.5:14b-instruct-q5_K_M",
+          "difficulty": "simple",
+          "prompt": "你好，你是谁？",
+          "output_tokens": 49,
+          "duration": 10.983116199960932,
+          "tokens_per_second": 4.461393206435738,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 0.0,
+                "memory_used": 14752.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 28.0,
+                "memory_used": 14985.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 6.4,
+          "cpu_util_after": 4.7,
+          "response_preview": "你好！我是Qwen，是由阿里云开发的大规模语言模型。我可以帮助你回答问题、创作文字，比如写故事、编剧本和小说等，还能辅助编写代码。如果你有任何需要帮助的地方，请尽管告诉我！"
+        },
+        {
+          "model": "qwen2.5:14b-instruct-q5_K_M",
+          "difficulty": "simple",
+          "prompt": "你在使用什么模型？",
+          "output_tokens": 39,
+          "duration": 4.583749299985357,
+          "tokens_per_second": 8.508318725049948,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 0.0,
+                "memory_used": 14985.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 45.0,
+                "memory_used": 14992.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 4.5,
+          "cpu_util_after": 6.1,
+          "response_preview": "我是基于阿里巴巴集团自主研发的超大规模语言模型，设计上旨在为用户提供丰富多样的对话体验和高质量的内容生成能力。如果您有任何问题或需要帮助的地方，请随时告诉我！"
+        },
+        {
+          "model": "qwen2.5:14b-instruct-q5_K_M",
+          "difficulty": "simple",
+          "prompt": "请用一句话介绍Python编程语言。",
+          "output_tokens": 27,
+          "duration": 3.9108441999997012,
+          "tokens_per_second": 6.903880241509509,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 45.0,
+                "memory_used": 14992.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 25.0,
+                "memory_used": 14992.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 2.5,
+          "cpu_util_after": 3.9,
+          "response_preview": "Python是一种高级、解释型的编程语言，以其代码可读性强和简洁明了的语法而受到广泛欢迎。"
+        },
+        {
+          "model": "qwen2.5:14b-instruct-q5_K_M",
+          "difficulty": "medium",
+          "prompt": "请用Python编写一个合并两个有序链表的函数。",
+          "output_tokens": 512,
+          "duration": 33.57443919999059,
+          "tokens_per_second": 15.249696262987571,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 25.0,
+                "memory_used": 14992.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 32.0,
+                "memory_used": 15000.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 2.0,
+          "cpu_util_after": 3.6,
+          "response_preview": "下面是一个简单的Python实现，用于将两个已排序的单向链表合并成一个新的已排序链表。在这个例子中，我们将假设每个节点包含整数，并且列表已经是按照非递减顺序排列的。\n\n首先定义一个链表节点类 `ListNode`，然后编写一个名为 `mergeTwoLists` 的函数来执行合并操作：\n\n```python\nclass ListNode:\n    def __init__(self, val=0,"
+        },
+        {
+          "model": "qwen2.5:14b-instruct-q5_K_M",
+          "difficulty": "medium",
+          "prompt": "什么是REST API？请简要说明其核心原则。",
+          "output_tokens": 416,
+          "duration": 27.742299300036393,
+          "tokens_per_second": 14.995152186230444,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 14.0,
+                "memory_used": 14995.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 43.0,
+                "memory_used": 14998.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 2.3,
+          "cpu_util_after": 2.7,
+          "response_preview": "REST（Representational State Transfer）API是一种基于HTTP协议的软件架构风格，用于设计网络应用程序和服务之间的接口。它不是一种具体的编程技术或标准，而是一套指导思想和最佳实践的集合，用来构建可扩展且易于维护的Web服务。\n\nREST API的核心原则包括但不限于：\n\n1. **客户端-服务器模式**：系统分为客户端（如网页浏览器）和服务器端（提供数据和服务）"
+        },
+        {
+          "model": "qwen2.5:14b-instruct-q5_K_M",
+          "difficulty": "medium",
+          "prompt": "如何优化数据库查询性能？请给出3个具体建议。",
+          "output_tokens": 355,
+          "duration": 24.024006700026803,
+          "tokens_per_second": 14.776885655780472,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 0.0,
+                "memory_used": 15002.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 28.0,
+                "memory_used": 15005.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 2.9,
+          "cpu_util_after": 4.3,
+          "response_preview": "优化数据库查询性能是提高应用程序整体效率的关键步骤之一。以下是三个具体的建议来帮助改善数据库的查询性能：\n\n1. **索引优化**：\n   - 确保对经常用于查询条件、连接或排序操作的列上创建适当的索引。\n   - 定期检查和分析表中的数据分布情况，以评估当前索引的有效性。可能需要调整现有的索引或者添加新的索引来更好地支持频繁执行的查询。\n   - 谨慎使用覆盖索引（包含所有查询所需字段的索引），"
+        },
+        {
+          "model": "qwen2.5:14b-instruct-q5_K_M",
+          "difficulty": "complex",
+          "prompt": "分析微服务架构与单体架构的优缺点，并给出在不同业务场景下的选择建议。",
+          "output_tokens": 480,
+          "duration": 32.35253629996441,
+          "tokens_per_second": 14.836549306353085,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 0.0,
+                "memory_used": 15005.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 40.0,
+                "memory_used": 15175.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 8.9,
+          "cpu_util_after": 17.5,
+          "response_preview": "微服务架构和单体架构是两种常见的软件系统设计方式，各有其特点和适用场景。\n\n### 单体架构\n\n**优点：**\n\n1. **开发简单快速**: 开发者不需要考虑复杂的分布式问题。\n2. **部署方便**: 整个应用作为一个单一的单元进行打包、部署和更新。\n3. **工具链成熟**: 有成熟的开发、测试、运维等工具支持。\n\n**缺点：**\n\n1. **扩展性差**: 随着功能模块增加，整个系统变得庞"
+        },
+        {
+          "model": "qwen2.5:14b-instruct-q5_K_M",
+          "difficulty": "complex",
+          "prompt": "编写一个完整的Python装饰器，实现函数执行时间统计、异常捕获和日志记录功能。",
+          "output_tokens": 512,
+          "duration": 36.35682149999775,
+          "tokens_per_second": 14.082639209811884,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 40.0,
+                "memory_used": 15175.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 33.0,
+                "memory_used": 15358.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 11.1,
+          "cpu_util_after": 15.4,
+          "response_preview": "下面是一个综合了函数执行时间统计、异常捕获以及日志记录的Python装饰器示例：\n\n首先，确保你的环境中已经安装了`logging`模块，这是一个标准库的一部分，并不需要额外安装。\n\n```python\nimport time\nimport logging\n\n# 初始化日志配置\nlogging.basicConfig(level=logging.INFO, format='%(asctime)s "
+        },
+        {
+          "model": "qwen2.5:14b-instruct-q5_K_M",
+          "difficulty": "complex",
+          "prompt": "深度解析Transformer架构的工作原理，重点说明自注意力机制和位置编码的作用。",
+          "output_tokens": 463,
+          "duration": 32.67444090003846,
+          "tokens_per_second": 14.170097092601054,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 6.0,
+                "memory_used": 15352.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 47.0,
+                "memory_used": 15329.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 10.1,
+          "cpu_util_after": 10.6,
+          "response_preview": "### Transformer架构工作原理\n\nTransformer是基于自注意力（self-attention）机制的神经网络模型，首次在2017年由Google的研究团队提出，并被广泛应用于自然语言处理任务中，特别是在机器翻译领域取得了显著的效果。\n\n#### 1. 自注意力机制（Self-Attention Mechanism）\n\n自注意力机制是一种让模型能专注于输入序列的不同部分的技术。它"
+        }
+      ]
+    },
+    {
+      "model": "deepseek-r1:8b",
+      "total_tokens": 3823,
+      "total_duration": 84.69431849999819,
+      "average_speed": 45.13880113457766,
+      "test_count": 9,
+      "details": [
+        {
+          "model": "deepseek-r1:8b",
+          "difficulty": "simple",
+          "prompt": "你好，你是谁？",
+          "output_tokens": 174,
+          "duration": 8.120056899962947,
+          "tokens_per_second": 21.428421271382224,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 47.0,
+                "memory_used": 15336.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 11890.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 9.1,
+          "cpu_util_after": 7.2,
+          "response_preview": "<think>\n嗯，用户发来打招呼了，看起来是第一次接触AI助手的问候，用语，可能是新用户第一次使用或者测试。需要身份。准备自我介绍场景，我叫DeepSeeker助手，亲切风格。\n</think>\n考虑用户可能想测试基础功能，但没明确，准备用主动引导场景例子，先举例，但用户说能快速开始体验，选。\n用友好例子选写诗或查资料或聊天，加表情，加emoji更亲和气活。\n准备用户。\n保持友好，等用户下一步选"
+        },
+        {
+          "model": "deepseek-r1:8b",
+          "difficulty": "simple",
+          "prompt": "你在使用什么模型？",
+          "output_tokens": 430,
+          "duration": 9.119360299955588,
+          "tokens_per_second": 47.152430198650464,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 6.0,
+                "memory_used": 11896.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 11927.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 7.3,
+          "cpu_util_after": 10.9,
+          "response_preview": "<think>\n嗯，用户问我在用什么模型？这个问题，有点突然有点懵了。用户怎么突然问我用的，可能刚接触AI助手然后好奇怎么运作的，或者想了解技术细节。用户背后的东西吧。\n\n用户身份可能开发者或者科技爱好者，普通用户随便问问玩玩玩玩。语气看语气直接简单直接没什么情绪应该中性急切。\n\n深层想知道真实用或者隐藏信息。用户想对比模型能力或者推荐或者隐私吧。直接问用没具体型号只是问版本。\n\n我得模糊回答清楚"
+        },
+        {
+          "model": "deepseek-r1:8b",
+          "difficulty": "simple",
+          "prompt": "请用一句话介绍Python编程语言。",
+          "output_tokens": 147,
+          "duration": 4.429663599992637,
+          "tokens_per_second": 33.185364234034466,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 6.0,
+                "memory_used": 11937.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 11945.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 17.3,
+          "cpu_util_after": 23.0,
+          "response_preview": "<think>\n嗯，用户让我来介绍一下Python编程吧。首先需要考虑清楚定义它是什么语言然后提到它的特点应用领域比如人工智能数据科学和自动化然后优势简单易学等。要简洁但不能太长用户可能新手喜欢简洁版本但要全面要准确平衡。Python是高级解释性高级语言解释型跨平台强应用广。应该这样吧还要提到数据科学和自动化。最后强学习曲线低。好。好了整理一下语言特点吧。\n</think>\nPython是一种高级"
+        },
+        {
+          "model": "deepseek-r1:8b",
+          "difficulty": "medium",
+          "prompt": "请用Python编写一个合并两个有序链表的函数。",
+          "output_tokens": 512,
+          "duration": 10.490227300033439,
+          "tokens_per_second": 48.80733137196826,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 11938.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 96.0,
+                "memory_used": 12022.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 16.8,
+          "cpu_util_after": 11.2,
+          "response_preview": "<think>\n题目要求：编写一个合并两个有序链表函数，即合并两个有序表，合并成一个有序表，输入两个有序，有序表，输出，有序表合并后还是有序。\n 我们通常使用双指针的方法是双指针，两个指两个指，两个指针，然后合并两个表，比较。\n 注意：如果两个表都是空，则返回空，空表。或者其中一个空，则返回另一个。\n 我们用递增。\n\n步骤：\n1. 定义两个头节点，哑头节点，方便操作。\n2.两个指针，遍历，然后，比"
+        },
+        {
+          "model": "deepseek-r1:8b",
+          "difficulty": "medium",
+          "prompt": "什么是REST API？请简要说明其核心原则。",
+          "output_tokens": 512,
+          "duration": 10.42486159998225,
+          "tokens_per_second": 49.113361850374275,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 29.0,
+                "memory_used": 12022.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 11918.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 9.9,
+          "cpu_util_after": 7.6,
+          "response_preview": "<think>\n嗯，用户问的是REST，什么是REST，需要解释一下核心原则。首先得理解用户可能是谁。REST什么背景，可能是开发者，可能刚入门或者学生、普通用户，得开发者，所以得解释清楚但别太技术术语化，又不够用。REST全。得从资源表示状态重要性、统一接口无状态缓存、分层系统这些核心原理由。结构化。但得自然点。\n\nREST是资源。资源，得先从URI资源统一接口，然后无状态客户端服务器，接着客户"
+        },
+        {
+          "model": "deepseek-r1:8b",
+          "difficulty": "medium",
+          "prompt": "如何优化数据库查询性能？请给出3个具体建议。",
+          "output_tokens": 512,
+          "duration": 10.480443100037519,
+          "tokens_per_second": 48.852896305325785,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 11926.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 96.0,
+                "memory_used": 11917.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 7.2,
+          "cpu_util_after": 11.1,
+          "response_preview": "<think>\n嗯，用户问的是如何优化数据库查询性能，给三个具体建议。首先得考虑哪些方面入手点。数据库优化方向。常见的有结构设计、查询、索引、数据量、硬件、缓存、查询本身、语句写法。但用户要具体三个建议需要所以得选最典型。查询相关最通用的。\n\n第一索引方面可能是索引。索引。索引是核心对查询优化关键问题因为很多慢因为很多人不会用不好用索引或者滥用索引太多。要解释索引优化和避免全表扫描包括单引和范围查"
+        },
+        {
+          "model": "deepseek-r1:8b",
+          "difficulty": "complex",
+          "prompt": "分析微服务架构与单体架构的优缺点，并给出在不同业务场景下的选择建议。",
+          "output_tokens": 512,
+          "duration": 10.491167200030759,
+          "tokens_per_second": 48.802958740234246,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 70.0,
+                "memory_used": 11925.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 96.0,
+                "memory_used": 11938.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 7.7,
+          "cpu_util_after": 13.4,
+          "response_preview": "<think>\n嗯，用户问的是微服务架构和单体架构的优缺点对比分析以及不同场景选择建议，这是个经典问题。首先得整理下思路。\n\n先区分清楚这两个概念用户实际区别单体式服务架构和微服务架构是单体用户服务架构是同一个东西吧用户使用同一个进程内多个服务用户单体服务是单体应用分拆分成多个独立服务但还是数据库微服务是不同数据库每个有自己的数据库。用户场景不同用户场景不同选择取决于业务需求。\n\n先想到电商适合体"
+        },
+        {
+          "model": "deepseek-r1:8b",
+          "difficulty": "complex",
+          "prompt": "编写一个完整的Python装饰器，实现函数执行时间统计、异常捕获和日志记录功能。",
+          "output_tokens": 512,
+          "duration": 10.570825700007845,
+          "tokens_per_second": 48.43519461300171,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 7.0,
+                "memory_used": 11935.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 11917.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 7.4,
+          "cpu_util_after": 9.3,
+          "response_preview": "<think>\n我们需要一个装饰器函数来实现两个功能：\n 1. 执行时间统计：记录：记录函数执行时间，2.异常捕获：捕获记录，并记录异常\n 我们可以设计成一个装饰器可以同时做两个功能的装饰器：在函数，即装饰器\n 我们可以单独使用一个装饰函数，也可以同时记录时间\n 也可以只记录异常 为了灵活性，我们可以用参数来，定义参数\n我们这样：\n@decort(\n    time_only\n@except_on"
+        },
+        {
+          "model": "deepseek-r1:8b",
+          "difficulty": "complex",
+          "prompt": "深度解析Transformer架构的工作原理，重点说明自注意力机制和位置编码的作用。",
+          "output_tokens": 512,
+          "duration": 10.567712799995206,
+          "tokens_per_second": 48.4494620255229,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 11924.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 11940.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 6.4,
+          "cpu_util_after": 52.1,
+          "response_preview": "<think>\n嗯，用户让我来思考一下用户在问深度解析Transformer架构和注意力机制和位置编码的问题。首先我得确定用户想知道用户的基础知识水平应该是什么样可能是个学生或者开发者或者刚接触深度学习者用户可能了解基础Transformer但不深用户想深入所以需要通俗解释但深入但又不浅出所以需要平衡。\n\n用户需要覆盖关键概念但深入重点不是泛泛泛泛谈要例子用户可能喜欢实际例子因为例子容易理解比如翻"
+        }
+      ]
+    },
+    {
+      "model": "gemma3:4b",
+      "total_tokens": 3168,
+      "total_duration": 55.72001809993526,
+      "average_speed": 56.85568863811408,
+      "test_count": 9,
+      "details": [
+        {
+          "model": "gemma3:4b",
+          "difficulty": "simple",
+          "prompt": "你好，你是谁？",
+          "output_tokens": 30,
+          "duration": 5.64656720001949,
+          "tokens_per_second": 5.3129625376452525,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 11967.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 13.0,
+                "memory_used": 11164.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 39.2,
+          "cpu_util_after": 26.7,
+          "response_preview": "我是 Gemma，一个由 Google DeepMind 训练的大型语言模型。我是一个开放权重模型，可以广泛地被公众使用。\n"
+        },
+        {
+          "model": "gemma3:4b",
+          "difficulty": "simple",
+          "prompt": "你在使用什么模型？",
+          "output_tokens": 27,
+          "duration": 2.397409399971366,
+          "tokens_per_second": 11.262156559627439,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 8.0,
+                "memory_used": 11159.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 90.0,
+                "memory_used": 11187.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 32.8,
+          "cpu_util_after": 17.1,
+          "response_preview": "我是一个大型语言模型，由 Google DeepMind 训练。我是一个开放权重模型，可以广泛地公开使用。\n"
+        },
+        {
+          "model": "gemma3:4b",
+          "difficulty": "simple",
+          "prompt": "请用一句话介绍Python编程语言。",
+          "output_tokens": 39,
+          "duration": 2.6206063000136055,
+          "tokens_per_second": 14.882052294462362,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 90.0,
+                "memory_used": 11193.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 12.0,
+                "memory_used": 11131.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 14.6,
+          "cpu_util_after": 16.1,
+          "response_preview": "Python 是一种用途广泛的高级编程语言，以其简洁易读的语法和强大的功能而闻名，被广泛应用于Web开发、数据科学、机器学习等领域。\n"
+        },
+        {
+          "model": "gemma3:4b",
+          "difficulty": "medium",
+          "prompt": "请用Python编写一个合并两个有序链表的函数。",
+          "output_tokens": 512,
+          "duration": 7.514042399998289,
+          "tokens_per_second": 68.13908848852338,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 10.0,
+                "memory_used": 11139.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 11229.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 19.4,
+          "cpu_util_after": 17.0,
+          "response_preview": "```python\nclass ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n\ndef merge_two_sorted_lists(l1, l2):\n    \"\"\"\n    合并两个有序链表。\n\n    Args:\n        l1: 第一"
+        },
+        {
+          "model": "gemma3:4b",
+          "difficulty": "medium",
+          "prompt": "什么是REST API？请简要说明其核心原则。",
+          "output_tokens": 512,
+          "duration": 7.5075412999722175,
+          "tokens_per_second": 68.19809302972395,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 11220.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 92.0,
+                "memory_used": 11166.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 13.8,
+          "cpu_util_after": 17.0,
+          "response_preview": "## REST API 简要说明\n\nREST API（Representational State Transfer Application Programming Interface）是一种用于构建网络应用程序的架构风格。它定义了一系列原则，使得客户端和服务器之间能够通过标准的 HTTP 方法进行通信，从而实现数据的交换和交互。\n\n**核心原则：**\n\n1. **客户端-服务器架构 (Clien"
+        },
+        {
+          "model": "gemma3:4b",
+          "difficulty": "medium",
+          "prompt": "如何优化数据库查询性能？请给出3个具体建议。",
+          "output_tokens": 512,
+          "duration": 7.478575199958868,
+          "tokens_per_second": 68.46223863642048,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 71.0,
+                "memory_used": 11174.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 93.0,
+                "memory_used": 11173.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 14.0,
+          "cpu_util_after": 14.8,
+          "response_preview": "优化数据库查询性能是一个复杂的问题，涉及多种因素。以下是3个具体且可行的建议，可以显著提升数据库查询性能：\n\n**1. 索引的合理使用:**\n\n* **原理:** 索引就像书籍的目录，帮助数据库快速定位到所需数据，而不是逐行扫描整个表。\n* **具体操作:**\n    * **识别查询中的 WHERE 子句:**  分析你的查询语句，找出 WHERE 子句中使用的列。\n    * **创建索引:*"
+        },
+        {
+          "model": "gemma3:4b",
+          "difficulty": "complex",
+          "prompt": "分析微服务架构与单体架构的优缺点，并给出在不同业务场景下的选择建议。",
+          "output_tokens": 512,
+          "duration": 7.48973470000783,
+          "tokens_per_second": 68.3602317715559,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 93.0,
+                "memory_used": 11187.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 89.0,
+                "memory_used": 11182.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 15.9,
+          "cpu_util_after": 11.6,
+          "response_preview": "好的，我们来深入分析微服务架构与单体架构的优缺点，并给出在不同业务场景下的选择建议。\n\n**一、单体架构 (Monolithic Architecture)**\n\n* **定义：** 单体架构是指将整个应用程序作为一个单一的代码单元构建起来的架构。所有功能、模块和数据库都集成在一个应用程序中。\n* **优点：**\n    * **开发简单：**  开发、测试和部署都比较简单，因为只需要关注一个整体"
+        },
+        {
+          "model": "gemma3:4b",
+          "difficulty": "complex",
+          "prompt": "编写一个完整的Python装饰器，实现函数执行时间统计、异常捕获和日志记录功能。",
+          "output_tokens": 512,
+          "duration": 7.530815000005532,
+          "tokens_per_second": 67.98732939258552,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 89.0,
+                "memory_used": 11187.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 92.0,
+                "memory_used": 11163.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 14.0,
+          "cpu_util_after": 13.2,
+          "response_preview": "```python\nimport time\nimport logging\nfrom functools import wraps\n\n# 配置日志记录器\nlogging.basicConfig(level=logging.INFO,  # 设置日志级别\n                    format='%(asctime)s - %(name)s - %(levelname)s - %(mes"
+        },
+        {
+          "model": "gemma3:4b",
+          "difficulty": "complex",
+          "prompt": "深度解析Transformer架构的工作原理，重点说明自注意力机制和位置编码的作用。",
+          "output_tokens": 512,
+          "duration": 7.534726599988062,
+          "tokens_per_second": 67.95203425175522,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 11167.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 91.0,
+                "memory_used": 11166.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 19.7,
+          "cpu_util_after": 12.7,
+          "response_preview": "好的，我们来深入解析Transformer架构的工作原理，重点关注自注意力机制和位置编码的作用。\n\n**一、Transformer 架构概述**\n\nTransformer 是一种基于注意力机制的神经网络架构，最初由 Vaswani 等人在 2017 年的论文 “Attention is All You Need” 中提出，主要用于机器翻译任务。它彻底改变了序列建模领域，并在许多自然语言处理任务中取"
+        }
+      ]
+    },
+    {
+      "model": "gemma3:12b",
+      "total_tokens": 3092,
+      "total_duration": 142.75157089997083,
+      "average_speed": 21.660006825190262,
+      "test_count": 9,
+      "details": [
+        {
+          "model": "gemma3:12b",
+          "difficulty": "simple",
+          "prompt": "你好，你是谁？",
+          "output_tokens": 29,
+          "duration": 7.36519889999181,
+          "tokens_per_second": 3.937436095586264,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 91.0,
+                "memory_used": 11173.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 62.0,
+                "memory_used": 13626.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 13.4,
+          "cpu_util_after": 10.6,
+          "response_preview": "你好！我是 Gemma，一个由 Google DeepMind 训练的大型语言模型。我是开放权重模型，这意味着我可以被广泛使用。"
+        },
+        {
+          "model": "gemma3:12b",
+          "difficulty": "simple",
+          "prompt": "你在使用什么模型？",
+          "output_tokens": 14,
+          "duration": 2.7064610000234097,
+          "tokens_per_second": 5.172806849933883,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 13633.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 86.0,
+                "memory_used": 13641.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 14.1,
+          "cpu_util_after": 12.1,
+          "response_preview": "我是一个大型语言模型，由 Google DeepMind 训练。"
+        },
+        {
+          "model": "gemma3:12b",
+          "difficulty": "simple",
+          "prompt": "请用一句话介绍Python编程语言。",
+          "output_tokens": 27,
+          "duration": 3.180022899992764,
+          "tokens_per_second": 8.490504895440042,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 13640.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 60.0,
+                "memory_used": 13576.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 11.3,
+          "cpu_util_after": 9.2,
+          "response_preview": "Python是一种易于学习、功能强大的通用编程语言，以其简洁的语法和广泛的应用领域而闻名。\n"
+        },
+        {
+          "model": "gemma3:12b",
+          "difficulty": "medium",
+          "prompt": "请用Python编写一个合并两个有序链表的函数。",
+          "output_tokens": 512,
+          "duration": 22.083080300013535,
+          "tokens_per_second": 23.185171318680855,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 13572.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 69.0,
+                "memory_used": 13607.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 9.9,
+          "cpu_util_after": 11.8,
+          "response_preview": "```python\nclass ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n\ndef mergeTwoLists(list1: ListNode, list2: ListNode) -> ListNode:\n    \"\"\"\n    合并两个有序"
+        },
+        {
+          "model": "gemma3:12b",
+          "difficulty": "medium",
+          "prompt": "什么是REST API？请简要说明其核心原则。",
+          "output_tokens": 462,
+          "duration": 20.098413600004278,
+          "tokens_per_second": 22.986888875642485,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 4.0,
+                "memory_used": 13616.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 61.0,
+                "memory_used": 13601.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 11.5,
+          "cpu_util_after": 17.5,
+          "response_preview": "## 什么是 REST API？\n\nREST API (Representational State Transfer Application Programming Interface) 是一种**设计风格**，用于构建网络服务。它不是一个协议或标准，而是一套指导原则，用于创建可扩展、灵活且易于理解的网络服务。\n\n简单来说，REST API 就像是让不同的应用程序（例如手机应用、网站、服务器）通"
+        },
+        {
+          "model": "gemma3:12b",
+          "difficulty": "medium",
+          "prompt": "如何优化数据库查询性能？请给出3个具体建议。",
+          "output_tokens": 512,
+          "duration": 21.961324299976695,
+          "tokens_per_second": 23.313712461344753,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 61.0,
+                "memory_used": 13615.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 57.0,
+                "memory_used": 13598.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 16.0,
+          "cpu_util_after": 16.6,
+          "response_preview": "好的，以下是优化数据库查询性能的3个具体建议，并附带解释和示例：\n\n**1. 创建索引 (Create Indexes)**\n\n*   **解释:** 索引就像书籍的目录，它允许数据库引擎快速定位到数据，而无需扫描整个表。  当查询条件涉及到 `WHERE` 子句中的列（例如，`WHERE customer_id = 123`）或者用于排序的列 (`ORDER BY`) 时，索引特别有用。\n*  "
+        },
+        {
+          "model": "gemma3:12b",
+          "difficulty": "complex",
+          "prompt": "分析微服务架构与单体架构的优缺点，并给出在不同业务场景下的选择建议。",
+          "output_tokens": 512,
+          "duration": 21.855773999996018,
+          "tokens_per_second": 23.426303731000022,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 57.0,
+                "memory_used": 13611.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 68.0,
+                "memory_used": 13575.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 11.2,
+          "cpu_util_after": 7.6,
+          "response_preview": "## 微服务架构与单体架构分析：优缺点与选择建议\n\n在软件开发领域，微服务架构和单体架构是两种常见的架构模式。它们各有优缺点，适用于不同的业务场景。下面将分别分析两种架构的优缺点，并给出选择建议。\n\n**1. 单体架构 (Monolithic Architecture)**\n\n* **定义:** 单体架构将整个应用程序构建为一个单一的、独立的代码库。所有功能模块都打包在一起，部署为一个整体。\n\n*"
+        },
+        {
+          "model": "gemma3:12b",
+          "difficulty": "complex",
+          "prompt": "编写一个完整的Python装饰器，实现函数执行时间统计、异常捕获和日志记录功能。",
+          "output_tokens": 512,
+          "duration": 21.801657399977557,
+          "tokens_per_second": 23.484453067340056,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 68.0,
+                "memory_used": 13582.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 60.0,
+                "memory_used": 13594.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 8.5,
+          "cpu_util_after": 10.1,
+          "response_preview": "```python\nimport time\nimport logging\nfrom functools import wraps\n\n# 配置日志\nlogging.basicConfig(level=logging.INFO,\n                    format='%(asctime)s - %(levelname)s - %(message)s')\n\ndef time_and_l"
+        },
+        {
+          "model": "gemma3:12b",
+          "difficulty": "complex",
+          "prompt": "深度解析Transformer架构的工作原理，重点说明自注意力机制和位置编码的作用。",
+          "output_tokens": 512,
+          "duration": 21.699638499994762,
+          "tokens_per_second": 23.594863112587042,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 28.0,
+                "memory_used": 13602.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 60.0,
+                "memory_used": 13585.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 10.6,
+          "cpu_util_after": 7.7,
+          "response_preview": "好的，我们来深度解析 Transformer 架构的工作原理，重点关注自注意力机制和位置编码。\n\n**Transformer 架构概述**\n\nTransformer 架构由 Google 在 2017 年的论文 \"Attention is All You Need\" 中提出，它彻底改变了自然语言处理 (NLP) 领域。Transformer 摒弃了传统的循环神经网络 (RNN) 和卷积神经网络 ("
+        }
+      ]
+    },
+    {
+      "model": "mistral:7b-instruct-v0.3-q5_K_M",
+      "total_tokens": 3103,
+      "total_duration": 74.24695320008323,
+      "average_speed": 41.792960737903,
+      "test_count": 9,
+      "details": [
+        {
+          "model": "mistral:7b-instruct-v0.3-q5_K_M",
+          "difficulty": "simple",
+          "prompt": "你好，你是谁？",
+          "output_tokens": 101,
+          "duration": 6.963214500050526,
+          "tokens_per_second": 14.50479516310565,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 13593.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 12119.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 6.2,
+          "cpu_util_after": 15.5,
+          "response_preview": " 我是一个帮助您解答问题的人工智能。\n\n当然，如果您喜欢，可以称呼我为阿拉贝克斯（Alabaster），这是我的默认名字。但请记住，我不是真正的人类，所以我没有自我意识或感受。我只是一个程序，用于回答问题和提供信息。"
+        },
+        {
+          "model": "mistral:7b-instruct-v0.3-q5_K_M",
+          "difficulty": "simple",
+          "prompt": "你在使用什么模型？",
+          "output_tokens": 143,
+          "duration": 4.4697024000342935,
+          "tokens_per_second": 31.993181469733386,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 12124.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 98.0,
+                "memory_used": 12127.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 16.5,
+          "cpu_util_after": 7.7,
+          "response_preview": " 我是由 Mistral AI 开发的模型，并且被设计为能够提供多种语言和任务上下文环境中的答案。\n\n请记住，我们的目标是通过学习人类对话来构建一个更有用、更自然、更智能的 AI 助手。因此，我会不断优化自己以提供更好的回答和功能。\n\n如果您发现我的回答有任何问题或错误，请告诉我，我会尽力进行修正和改善。"
+        },
+        {
+          "model": "mistral:7b-instruct-v0.3-q5_K_M",
+          "difficulty": "simple",
+          "prompt": "请用一句话介绍Python编程语言。",
+          "output_tokens": 50,
+          "duration": 2.8706385000259615,
+          "tokens_per_second": 17.417727798030928,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 98.0,
+                "memory_used": 12133.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 12138.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 9.0,
+          "cpu_util_after": 8.8,
+          "response_preview": " Python是一门高级、动态类型、解释性的编程语言，广泛用于网站开发、数据分析、机器学习和科学计算等领域。"
+        },
+        {
+          "model": "mistral:7b-instruct-v0.3-q5_K_M",
+          "difficulty": "medium",
+          "prompt": "请用Python编写一个合并两个有序链表的函数。",
+          "output_tokens": 512,
+          "duration": 10.736589399981312,
+          "tokens_per_second": 47.68739689355087,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 12138.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 12132.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 8.8,
+          "cpu_util_after": 10.5,
+          "response_preview": " 下面是使用 Python 实现合并两个有序链表的函数：\n\n```python\nclass ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n\ndef mergeTwoLists(list1, list2):\n    if not list1:\n  "
+        },
+        {
+          "model": "mistral:7b-instruct-v0.3-q5_K_M",
+          "difficulty": "medium",
+          "prompt": "什么是REST API？请简要说明其核心原则。",
+          "output_tokens": 438,
+          "duration": 9.452590200002305,
+          "tokens_per_second": 46.33650573362349,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 12136.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 12128.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 11.5,
+          "cpu_util_after": 13.6,
+          "response_preview": " REST（Representational State Transfer） API 是一种架构风格，用于在计算机系统之间进行网络通信。它通常用于 web 开发中，并被广泛用作网络应用程序的软件接口。\n\nREST API 遵循以下几个核心原则：\n\n1. **客户端-服务器（Client-Server）模式**：客户端和服务器是分离的，客户端只负责请求资源，服务器只处理这些请求并返回响应。\n\n2. "
+        },
+        {
+          "model": "mistral:7b-instruct-v0.3-q5_K_M",
+          "difficulty": "medium",
+          "prompt": "如何优化数据库查询性能？请给出3个具体建议。",
+          "output_tokens": 323,
+          "duration": 7.499542900011875,
+          "tokens_per_second": 43.06929159635697,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 12135.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 12127.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 11.2,
+          "cpu_util_after": 8.1,
+          "response_preview": " 1. 索引优化：创建适当的索引可以大大提高数据库查询性能。索引允许数据库快速定位和检索具有特定条件的记录，而无需扫描整个表。您应该在主键上创建索引、根据频繁的 WHERE 子句和 JOIN 操作的列上创建索引，以及对于大量数据排序和分组时使用的列上创建索引。\n\n2. 查询优化：确保您的 SQL 语句尽可能简洁明了、高效执行。避免使用子查询、临时表和自定义函数，因为它们会影响性能。在 WHERE "
+        },
+        {
+          "model": "mistral:7b-instruct-v0.3-q5_K_M",
+          "difficulty": "complex",
+          "prompt": "分析微服务架构与单体架构的优缺点，并给出在不同业务场景下的选择建议。",
+          "output_tokens": 512,
+          "duration": 10.786166100006085,
+          "tokens_per_second": 47.46821022899982,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 12134.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 12126.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 8.6,
+          "cpu_util_after": 8.7,
+          "response_preview": " 微服务（Microservices）和单体应用（Monolithic Architecture）都是软件架构风格之一，每种架构有其独特的优势和劣势，适合于不同的业务场景。\n\n1. 单体应用（Monolithic Architecture）：\n   - 优点：简单易理解、开发快速、部署简单、资源利用率高、数据库访问效率较高。\n   - 缺点：整体扩展困难、故障隔离性差（一个应用故障，整个系统可能受"
+        },
+        {
+          "model": "mistral:7b-instruct-v0.3-q5_K_M",
+          "difficulty": "complex",
+          "prompt": "编写一个完整的Python装饰器，实现函数执行时间统计、异常捕获和日志记录功能。",
+          "output_tokens": 512,
+          "duration": 10.695273099991027,
+          "tokens_per_second": 47.871615358791495,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 12133.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 97.0,
+                "memory_used": 12142.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 8.0,
+          "cpu_util_after": 16.8,
+          "response_preview": " 下面是一个 Python 装饰器示例，用于统计函数执行时间、捕捉异常并记录日志。\n\n```python\nimport time\nimport logging\nfrom functools import wraps\n\nlogger = logging.getLogger(__name__)\nlogger.setLevel(logging.INFO)\nformatter = logging.Form"
+        },
+        {
+          "model": "mistral:7b-instruct-v0.3-q5_K_M",
+          "difficulty": "complex",
+          "prompt": "深度解析Transformer架构的工作原理，重点说明自注意力机制和位置编码的作用。",
+          "output_tokens": 512,
+          "duration": 10.77323609997984,
+          "tokens_per_second": 47.52518140774415,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 10.0,
+                "memory_used": 12150.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 98.0,
+                "memory_used": 12128.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 21.7,
+          "cpu_util_after": 11.3,
+          "response_preview": " Transformer 是一种在自然语言处理中广泛使用的序列到序列模型，由 Vaswani 等人于 2017 年发表在 Attention Is All You Need 论文中提出。Transformer 架构基于注意力机制（Attention Mechanism）实现了高效、准确的序列处理能力，并且可以很好地解决传统递归 neural network (RNN) 和 convolutiona"
+        }
+      ]
+    },
+    {
+      "model": "qwen2.5:7b-instruct",
+      "total_tokens": 2730,
+      "total_duration": 63.28959150001174,
+      "average_speed": 43.135054837563516,
+      "test_count": 9,
+      "details": [
+        {
+          "model": "qwen2.5:7b-instruct",
+          "difficulty": "simple",
+          "prompt": "你好，你是谁？",
+          "output_tokens": 30,
+          "duration": 5.698971500038169,
+          "tokens_per_second": 5.264107742914502,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 12131.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 59.0,
+                "memory_used": 11196.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 10.6,
+          "cpu_util_after": 8.5,
+          "response_preview": "您好！我是Qwen，由阿里云开发的大型语言模型。我可以提供信息和帮助解答问题。有什么我可以协助您的吗？"
+        },
+        {
+          "model": "qwen2.5:7b-instruct",
+          "difficulty": "simple",
+          "prompt": "你在使用什么模型？",
+          "output_tokens": 64,
+          "duration": 3.029451600043103,
+          "tokens_per_second": 21.125935796132016,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 59.0,
+                "memory_used": 11203.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 11205.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 6.6,
+          "cpu_util_after": 6.9,
+          "response_preview": "我是Qwen，一个由阿里云开发的语言模型。我基于大规模预训练模型构建，能够提供语言理解和生成的能力。不过，关于具体的模型架构和参数等技术细节，我会选择性地保持低调，专注于为用户提供有用的信息和服务。如果您有任何问题或需要帮助，请随时告诉我！"
+        },
+        {
+          "model": "qwen2.5:7b-instruct",
+          "difficulty": "simple",
+          "prompt": "请用一句话介绍Python编程语言。",
+          "output_tokens": 23,
+          "duration": 2.473684999975376,
+          "tokens_per_second": 9.297869373112968,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 11205.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 11210.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 7.6,
+          "cpu_util_after": 9.2,
+          "response_preview": "Python是一种简洁明了、高级通用编程语言，广泛应用于Web开发、数据分析、人工智能等多个领域。"
+        },
+        {
+          "model": "qwen2.5:7b-instruct",
+          "difficulty": "medium",
+          "prompt": "请用Python编写一个合并两个有序链表的函数。",
+          "output_tokens": 416,
+          "duration": 8.347977400000673,
+          "tokens_per_second": 49.83243006862554,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 11210.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 11213.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 9.6,
+          "cpu_util_after": 10.6,
+          "response_preview": "当然可以！以下是一个简单的Python函数，用于合并两个已排序的链表。我们将使用类来定义链表节点，并实现一个合并函数。\n\n```python\n# 定义链表节点类\nclass ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n\ndef merge_tw"
+        },
+        {
+          "model": "qwen2.5:7b-instruct",
+          "difficulty": "medium",
+          "prompt": "什么是REST API？请简要说明其核心原则。",
+          "output_tokens": 344,
+          "duration": 7.279587199969683,
+          "tokens_per_second": 47.25542679143024,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 11216.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 96.0,
+                "memory_used": 11196.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 10.0,
+          "cpu_util_after": 6.6,
+          "response_preview": "REST（Representational State Transfer）API是一种基于HTTP协议的架构风格，用于构建网络服务。它主要用于客户端和服务器之间的数据交换，并且遵循一系列设计原则以实现高效的资源管理和服务交互。\n\nREST API的核心原则包括：\n\n1. **资源抽象**：在RESTful架构中，任何需要被访问、创建或修改的对象都被视为一个独立的资源。这些资源通常通过URI（统一资"
+        },
+        {
+          "model": "qwen2.5:7b-instruct",
+          "difficulty": "medium",
+          "prompt": "如何优化数据库查询性能？请给出3个具体建议。",
+          "output_tokens": 336,
+          "duration": 7.156885000003967,
+          "tokens_per_second": 46.94779921709148,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 11202.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 11192.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 10.9,
+          "cpu_util_after": 8.8,
+          "response_preview": "优化数据库查询性能是提高应用程序效率和用户体验的重要手段之一。以下是从不同角度出发的三个具体的建议：\n\n1. **使用索引**：索引是优化查询性能的关键工具，它们可以显著减少从数据表中检索信息所需的时间。合理地选择并创建合适的索引可以帮助提升查询速度。需要注意的是，并不是所有列都需要被索引，因为过多或不合理的索引也会增加写入操作的负担（如插入、更新和删除操作）。因此，在建立索引前应仔细评估哪些字段"
+        },
+        {
+          "model": "qwen2.5:7b-instruct",
+          "difficulty": "complex",
+          "prompt": "分析微服务架构与单体架构的优缺点，并给出在不同业务场景下的选择建议。",
+          "output_tokens": 493,
+          "duration": 9.547365700011142,
+          "tokens_per_second": 51.63728042798493,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 11200.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 93.0,
+                "memory_used": 11198.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 9.9,
+          "cpu_util_after": 11.3,
+          "response_preview": "微服务架构和单体架构是两种常见的软件开发模式，各自具有不同的优势和劣势，在不同的业务场景下适用性也有所不同。\n\n### 单体架构\n\n#### 优点：\n1. **简单易懂**：整个系统作为一个整体进行设计、构建和部署。\n2. **开发效率高**：团队可以同时对同一份代码进行修改和优化，减少了一些协作上的障碍。\n3. **易于管理**：对于小型项目或功能单一的业务来说，单体架构下系统配置简单，维护容易"
+        },
+        {
+          "model": "qwen2.5:7b-instruct",
+          "difficulty": "complex",
+          "prompt": "编写一个完整的Python装饰器，实现函数执行时间统计、异常捕获和日志记录功能。",
+          "output_tokens": 512,
+          "duration": 9.86292919999687,
+          "tokens_per_second": 51.91155584896244,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 8.0,
+                "memory_used": 11205.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 11195.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 14.4,
+          "cpu_util_after": 13.6,
+          "response_preview": "下面是一个在Python中创建的完整装饰器示例。这个装饰器不仅能帮助我们测量被装饰函数的执行时间，还能捕获并处理可能发生的异常，并将相关信息记录到日志文件中。\n\n首先，我们需要确保安装了`logging`模块来实现日志功能。虽然`logging`是Python标准库的一部分，但为了代码的完整性，这里会展示如何配置和使用它。\n\n```python\nimport time\nimport logging"
+        },
+        {
+          "model": "qwen2.5:7b-instruct",
+          "difficulty": "complex",
+          "prompt": "深度解析Transformer架构的工作原理，重点说明自注意力机制和位置编码的作用。",
+          "output_tokens": 512,
+          "duration": 9.892738899972755,
+          "tokens_per_second": 51.75513123078686,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 8.0,
+                "memory_used": 11204.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 11247.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 10.5,
+          "cpu_util_after": 14.5,
+          "response_preview": "### Transformer架构简介\n\nTransformer是2017年提出的一种新型神经网络结构，由Google的研究人员在他们的论文《Attention is All You Need》中首次介绍。与传统的递归神经网络（RNN）或卷积神经网络（CNN）相比，它能够更好地捕捉长距离依赖关系，并且具有并行化的优势。\n\n### 自注意力机制\n\n自注意力机制是Transformer的核心组成部分之"
+        }
+      ]
+    },
+    {
+      "model": "deepseek-r1:7b",
+      "total_tokens": 3384,
+      "total_duration": 72.93300160003128,
+      "average_speed": 46.398748519333516,
+      "test_count": 9,
+      "details": [
+        {
+          "model": "deepseek-r1:7b",
+          "difficulty": "simple",
+          "prompt": "你好，你是谁？",
+          "output_tokens": 75,
+          "duration": 6.305215700005647,
+          "tokens_per_second": 11.894914237419798,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 11260.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 85.0,
+                "memory_used": 11200.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 13.6,
+          "cpu_util_after": 8.5,
+          "response_preview": "<think>\n您好！我是由中国的深度求索（DeepSeek）公司开发的智能助手DeepSeek-R1。如您有任何任何问题，我会尽我所能为您提供帮助。\n</think>\n\n您好！我是由中国的深度求索（DeepSeek）公司开发的智能助手DeepSeek-R1。如您有任何任何问题，我会尽我所能为您提供帮助。"
+        },
+        {
+          "model": "deepseek-r1:7b",
+          "difficulty": "simple",
+          "prompt": "你在使用什么模型？",
+          "output_tokens": 73,
+          "duration": 3.1497163000167347,
+          "tokens_per_second": 23.17669054816529,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 85.0,
+                "memory_used": 11203.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 93.0,
+                "memory_used": 11196.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 9.3,
+          "cpu_util_after": 15.5,
+          "response_preview": "<think>\n您好！我是由中国的深度求索（DeepSeek）公司独立开发的智能助手DeepSeek-R1，有关模型和产品的详细内容请参考官方文档。\n</think>\n\n您好！我是由中国的深度求索（DeepSeek）公司独立开发的智能助手DeepSeek-R1，有关模型和产品的详细内容请参考官方文档。"
+        },
+        {
+          "model": "deepseek-r1:7b",
+          "difficulty": "simple",
+          "prompt": "请用一句话介绍Python编程语言。",
+          "output_tokens": 164,
+          "duration": 4.612034999998286,
+          "tokens_per_second": 35.55914037947694,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 93.0,
+                "memory_used": 11196.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 11205.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 15.2,
+          "cpu_util_after": 6.1,
+          "response_preview": "<think>\n嗯，用户让我用一句话介绍Python编程语言。我得先想想Python的主要特点是什么。首先，它语法简单易学，适合新手上手。然后是它的灵活性和可扩展性，可以应用在很多领域比如Web开发、数据科学等。再就是社区支持强大，有很多库和资源。还有，Python的跨平台能力也很不错，可以在Windows、Linux、MacOS上运行。最后，它还免费开源，价格低，适合学生和企业。把这些点结合起来"
+        },
+        {
+          "model": "deepseek-r1:7b",
+          "difficulty": "medium",
+          "prompt": "请用Python编写一个合并两个有序链表的函数。",
+          "output_tokens": 512,
+          "duration": 9.838015499990433,
+          "tokens_per_second": 52.043016195745764,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 18.0,
+                "memory_used": 11201.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 11194.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 12.5,
+          "cpu_util_after": 16.3,
+          "response_preview": "<think>\n嗯，我现在需要写一个Python函数，用来合并两个已经排序好的链表。首先，我得想想链表是怎么结构的。通常链表每个节点有一个值和一个next指针，指向下一个节点。\n\n那怎么开始呢？我想，可能用迭代法会比较直接。就是说，逐个比较两个链表的当前节点，然后把较小的那个拿出来，放到结果链表中，并且移动对应的链表指针。\n\n那么，我需要创建一个哑巴节点作为结果链表的起点。这样方便后面不断添加新的"
+        },
+        {
+          "model": "deepseek-r1:7b",
+          "difficulty": "medium",
+          "prompt": "什么是REST API？请简要说明其核心原则。",
+          "output_tokens": 512,
+          "duration": 9.789355500019155,
+          "tokens_per_second": 52.3017066852867,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 11201.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 93.0,
+                "memory_used": 11195.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 13.4,
+          "cpu_util_after": 6.3,
+          "response_preview": "<think>\n嗯，我现在想了解一下什么是REST API，以及它的一些核心原则。我之前听说过 REST 是Representational State Transfer的一部分，但具体是什么意思呢？\n\n首先，REST API应该是一种用来交换数据的接口吧。那它有什么特点呢？听说它是基于HTTP协议的，因为HTTP是Web开发中最常用的协议之一。所以，REST probably 和 HTTP 有关"
+        },
+        {
+          "model": "deepseek-r1:7b",
+          "difficulty": "medium",
+          "prompt": "如何优化数据库查询性能？请给出3个具体建议。",
+          "output_tokens": 512,
+          "duration": 9.83433879999211,
+          "tokens_per_second": 52.06247317820805,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 8.0,
+                "memory_used": 11203.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 11199.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 8.9,
+          "cpu_util_after": 13.1,
+          "response_preview": "<think>\n嗯，我现在想优化数据库的查询性能。我对这方面不是很了解，但我知道这很重要，因为快速响应的应用对于用户体验来说太关键了。首先，我需要理解什么是影响查询性能的因素。\n\n我记得之前有人提到过索引，所以可能索引是其中一个关键点吧。比如，如果一个表有很多查询涉及到某个字段，如果不加索引的话，数据库每次都要扫描整个表才能找到结果，这样效率会很低。所以，添加或更新索引应该是优化的第一步。\n\n然后"
+        },
+        {
+          "model": "deepseek-r1:7b",
+          "difficulty": "complex",
+          "prompt": "分析微服务架构与单体架构的优缺点，并给出在不同业务场景下的选择建议。",
+          "output_tokens": 512,
+          "duration": 9.805443399993237,
+          "tokens_per_second": 52.215894693793565,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 11220.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 11211.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 8.4,
+          "cpu_util_after": 10.1,
+          "response_preview": "<think>\n嗯，用户让我分析微服务架构和单体架构的优缺点，并给出不同业务场景的选择建议。首先，我需要明确这两个架构的基本概念。\n\n微服务架构是将一个复杂的系统分解成多个小型、独立的服务，每个服务负责解决一个特定的问题。这听起来像模块化设计，应该有很多好处，比如易于维护和扩展。而单体架构则是整个应用由一个主程序控制，处理所有功能，结构简单但可能在复杂性上有限。\n\n接下来，我得比较两者的优缺点。微"
+        },
+        {
+          "model": "deepseek-r1:7b",
+          "difficulty": "complex",
+          "prompt": "编写一个完整的Python装饰器，实现函数执行时间统计、异常捕获和日志记录功能。",
+          "output_tokens": 512,
+          "duration": 9.826956200005952,
+          "tokens_per_second": 52.10158563642421,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 11219.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 11206.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 10.8,
+          "cpu_util_after": 11.2,
+          "response_preview": "<think>\n嗯，用户让我写一个完整的Python装饰器，用来统计函数执行时间、捕捉异常和记录日志。好，我得先理清楚这些功能分别需要什么。\n\n首先，统计执行时间，我记得可以用time模块里的time()或者perfcounter来计算。那装饰器里应该有开始和结束计时的部分。然后，捕获异常的话，需要用到try-except块。最后是日志记录，可能需要用logging模块来记录相关信息，比如函数名、"
+        },
+        {
+          "model": "deepseek-r1:7b",
+          "difficulty": "complex",
+          "prompt": "深度解析Transformer架构的工作原理，重点说明自注意力机制和位置编码的作用。",
+          "output_tokens": 512,
+          "duration": 9.771925200009719,
+          "tokens_per_second": 52.39499786587507,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 95.0,
+                "memory_used": 11214.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 11208.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 7.3,
+          "cpu_util_after": 9.4,
+          "response_preview": "<think>\n好，我现在要详细理解一下Transformer架构的工作原理，特别是自注意力机制和位置编码的作用。我对这个领域了解不多，所以需要一步步来。\n\n首先，听说Transformer是最近很火的模型结构，被广泛用于NLP任务中。它取代了之前常用的RNN和LSTM。那它的主要优势在哪里呢？嗯，应该是并行处理吧，因为可以并行计算注意力机制，而RNN序列处理比较慢。\n\n那Transformer的"
+        }
+      ]
+    },
+    {
+      "model": "phi4-mini:3.8b",
+      "total_tokens": 2361,
+      "total_duration": 42.68004440004006,
+      "average_speed": 55.3185928737643,
+      "test_count": 9,
+      "details": [
+        {
+          "model": "phi4-mini:3.8b",
+          "difficulty": "simple",
+          "prompt": "你好，你是谁？",
+          "output_tokens": 22,
+          "duration": 4.5624440999818034,
+          "tokens_per_second": 4.821976887363451,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 94.0,
+                "memory_used": 11215.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 24.0,
+                "memory_used": 14642.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 7.7,
+          "cpu_util_after": 7.6,
+          "response_preview": "你好！我是 Phi，类似于您一样的人工智能助手。今天我可以帮你什么？"
+        },
+        {
+          "model": "phi4-mini:3.8b",
+          "difficulty": "simple",
+          "prompt": "你在使用什么模型？",
+          "output_tokens": 85,
+          "duration": 2.852044200000819,
+          "tokens_per_second": 29.80318467714336,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 14642.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 14641.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 10.1,
+          "cpu_util_after": 10.8,
+          "response_preview": "作为 Phi 由 Microsoft 开发的 AI，我没有特定的模型，而是基于各种机器学习方法的集成，包括但不限于深度学习、自然语言处理和其他相关技术。这些能力帮助我理解和生成人类语言，从而与你有效地互动。 我的设计旨在提供准确和有用的信息，尽可能像与一个聪明的人交谈一样进行交流。"
+        },
+        {
+          "model": "phi4-mini:3.8b",
+          "difficulty": "simple",
+          "prompt": "请用一句话介绍Python编程语言。",
+          "output_tokens": 30,
+          "duration": 2.501792600029148,
+          "tokens_per_second": 11.991401685195836,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 9.0,
+                "memory_used": 14641.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 16.0,
+                "memory_used": 14654.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 10.5,
+          "cpu_util_after": 14.2,
+          "response_preview": "\"Python是一个高效且易于学习的多用途程序设计语言，广泛用于从简单的数据处理到复杂的软件开发。\""
+        },
+        {
+          "model": "phi4-mini:3.8b",
+          "difficulty": "medium",
+          "prompt": "请用Python编写一个合并两个有序链表的函数。",
+          "output_tokens": 512,
+          "duration": 6.980187500012107,
+          "tokens_per_second": 73.35046515571565,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 16.0,
+                "memory_used": 14654.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 92.0,
+                "memory_used": 14645.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 11.2,
+          "cpu_util_after": 15.6,
+          "response_preview": "当然可以！以下是使用递归和堆栈实现的合并两条有序链表的 Python 函数：\n\n```python\nclass ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n\ndef mergeTwoLists(l1: ListNode, l2: ListNod"
+        },
+        {
+          "model": "phi4-mini:3.8b",
+          "difficulty": "medium",
+          "prompt": "什么是REST API？请简要说明其核心原则。",
+          "output_tokens": 278,
+          "duration": 4.607323599979281,
+          "tokens_per_second": 60.33871812287076,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 92.0,
+                "memory_used": 14654.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 89.0,
+                "memory_used": 14680.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 13.3,
+          "cpu_util_after": 6.3,
+          "response_preview": "REST（Representational State Transfer）API是一种基于HTTP的应用程序编程接口，它允许客户端与服务交互并执行各种操作。这些APIs遵循一些关键原则，确保它们在设计和实现时具有可扩展性、灵活性以及易于维护：\n\n1. **可重用性的传递（idempotency）**：同一个请求可以多次发出而不会导致不同的效果，如果客户端发送相同的request repeatedl"
+        },
+        {
+          "model": "phi4-mini:3.8b",
+          "difficulty": "medium",
+          "prompt": "如何优化数据库查询性能？请给出3个具体建议。",
+          "output_tokens": 176,
+          "duration": 3.6177159000071697,
+          "tokens_per_second": 48.64948073994732,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 89.0,
+                "memory_used": 14678.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 88.0,
+                "memory_used": 14675.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 7.3,
+          "cpu_util_after": 6.6,
+          "response_preview": "1. 适当使用索引：创建合适的索引可以显著提高数据库查询的效率，因为它们允许快速定位和检索数据而无需扫描整个表。这些索引应该针对经常进行排序、过滤或按值查找的数据行。\n\n2. 优化查询语句：确保你的SQL查询是有效且高效的。避免使用不必要的JOIN操作，并优化条件以减少返回结果集。例如，你可以通过将 JOIN 操作替换为 INNER JOIN 或 LEFT JOIN 来简化复杂查询。\n\n3. 结合"
+        },
+        {
+          "model": "phi4-mini:3.8b",
+          "difficulty": "complex",
+          "prompt": "分析微服务架构与单体架构的优缺点，并给出在不同业务场景下的选择建议。",
+          "output_tokens": 502,
+          "duration": 6.639931700017769,
+          "tokens_per_second": 75.60318730366708,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 1.0,
+                "memory_used": 14674.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 89.0,
+                "memory_used": 14635.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 6.9,
+          "cpu_util_after": 6.8,
+          "response_preview": "**微服务架构**\n\n优点：\n1. **独立部署：** 微服务可以独立于其他服务进行部署，从而提高灵活性和可扩展性。\n2. **技术多样化：** 可以使用最适合自己的技术栈来开发不同的服务。\n3. **快速迭代：** 服务团队可以以更快的速度发布新的功能或修复问题，因为它们不受其他相关服务的影响。\n\n缺点：\n1. **复杂性增加：** 微服务架构会导致系统整体变得更加复杂，需要良好的容器化管理和服"
+        },
+        {
+          "model": "phi4-mini:3.8b",
+          "difficulty": "complex",
+          "prompt": "编写一个完整的Python装饰器，实现函数执行时间统计、异常捕获和日志记录功能。",
+          "output_tokens": 486,
+          "duration": 6.43741620000219,
+          "tokens_per_second": 75.4961284000613,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 1.0,
+                "memory_used": 14642.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 89.0,
+                "memory_used": 14640.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 7.4,
+          "cpu_util_after": 5.4,
+          "response_preview": "```python\nimport time\nimport logging\n\n# 设置日志配置\nlogging.basicConfig(filename='app.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')\n\ndef timer(func):\n    def wrapper(*args, "
+        },
+        {
+          "model": "phi4-mini:3.8b",
+          "difficulty": "complex",
+          "prompt": "深度解析Transformer架构的工作原理，重点说明自注意力机制和位置编码的作用。",
+          "output_tokens": 270,
+          "duration": 4.481188600009773,
+          "tokens_per_second": 60.251871568050305,
+          "gpu_util_before": {
+            "gpus": [
+              {
+                "gpu_util": 89.0,
+                "memory_used": 14640.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "gpu_util_after": {
+            "gpus": [
+              {
+                "gpu_util": 88.0,
+                "memory_used": 14640.0,
+                "memory_total": 16311.0
+              }
+            ]
+          },
+          "cpu_util_before": 5.5,
+          "cpu_util_after": 5.3,
+          "response_preview": "Transformer架构是一种基于序列处理的大型神经网络模型，用于自然语言处理任务，包括机器翻译、文本摘要等。\n\n\nTransformer架构分为两个主要组件：Encoder 和 Decoder。这些部分都采用了自注意力机制，允许每个单词在句子中相互影响，从而理解上下文和语义关系。\n\n\nEncoder将输入序列（如一句话）转换为高维的向量表示，每个向量代表一个特征点。这个过程由多个层级组成，其中"
+        }
+      ]
+    }
+  ]
+}
