@@ -1,0 +1,52 @@
+{
+  "timestamp": "20251004_040055",
+  "total_models": 1,
+  "results": [
+    {
+      "model": "llama3.2:3b",
+      "total_eval_tokens": 1130,
+      "total_eval_duration": 0.0,
+      "average_eval_rate": 0.0,
+      "success_rate": 1.0,
+      "test_count": 3,
+      "details": [
+        {
+          "model": "llama3.2:3b",
+          "prompt": "Given two strings word1 and word2, calculate the minimum number of operations required to convert word1 to word2. Allowed operations include inserting a character, deleting a character, and replacing a character. Please provide a complete Python implementation including algorithm explanation, time complexity and space complexity analysis. Limit output to 400 tokens.",
+          "eval_count": 257,
+          "eval_duration": 0,
+          "eval_rate": 122.44,
+          "response_preview": "class Solution:\n    def minDistance(self, word1: str, word2: str) -> int:\n        m = len(word1)\n        n = len(word2)\n\n        dp = [[0] * (n + 1) for _ in range(m + 1)]\n\n        # Initialize the ba",
+          "output_tokens": 257,
+          "duration": 0,
+          "tokens_per_second": 122.44
+        },
+        {
+          "model": "llama3.2:3b",
+          "prompt": "Given a string containing only '(' and ')', find the length of the longest valid (well-formed and continuous) parentheses substring. Please provide a Python solution including algorithm explanation, code implementation, test cases, and complexity analysis. Limit output to 400 tokens.",
+          "eval_count": 268,
+          "eval_duration": 0,
+          "eval_rate": 128.86,
+          "response_preview": "import re\n\ndef longest_valid_parentheses(s):\n    \"\"\"\n    Find the length of the longest valid (well-formed and continuous) \n    parentheses substring in a given string.\n\n    Args:\n        s (str): A s",
+          "output_tokens": 268,
+          "duration": 0,
+          "tokens_per_second": 128.86
+        },
+        {
+          "model": "llama3.2:3b",
+          "prompt": "Given a 2D matrix consisting of 'X' and 'O', find all regions surrounded by 'X' and fill these regions' 'O' with 'X'. A surrounded region is one that is not connected to 'O' on the boundary. Please provide a complete Python implementation including algorithm explanation and complexity analysis. Limit output to 400 tokens.",
+          "eval_count": 605,
+          "eval_duration": 0,
+          "eval_rate": 126.31,
+          "response_preview": "# Region Filling in a Matrix\n=====================================\n\nGiven a 2D matrix consisting of 'X' and 'O', this script fills all regions surrounded by 'X' with 'X'. A region is considered surrou",
+          "output_tokens": 605,
+          "duration": 0,
+          "tokens_per_second": 126.31
+        }
+      ],
+      "total_tokens": 1130,
+      "total_duration": 0.0,
+      "average_speed": 0.0
+    }
+  ]
+}

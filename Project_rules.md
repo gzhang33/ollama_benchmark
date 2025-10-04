@@ -1,0 +1,236 @@
+# Ollama Test Project Rules
+
+## Project Structure
+
+### Directory Layout
+```
+ollama_test/
+├── app.py                          # Main application entry
+├── src/                           # Core source code
+│   ├── ollama_client.py           # Ollama API client
+│   └── ollama_utils.py            # Utility functions
+├── tests/                         # Test files
+│   └── performance.py             # Performance testing
+├── utils/                         # Utility modules
+│   ├── resource_monitor.py        # Resource monitoring
+│   └── visualization.py           # Data visualization
+├── data/                          # Data and results
+│   ├── analysis_results/          # Analysis outputs
+│   ├── app_results/               # App results
+│   └── speed_test_results/        # Performance test results
+└── Project_rules.md               # This file
+```
+
+### Directory Responsibilities
+- **`src/`**: Core business logic and API interfaces
+- **`tests/`**: All testing scripts and tools
+- **`utils/`**: Reusable utility classes and helper functions
+- **`data/`**: Runtime data and test results storage
+- **Root**: Main application entry point only
+
+## File Management Rules
+
+### File Naming
+- Use `snake_case` for Python files
+- Use descriptive names that reflect functionality
+- Avoid Python keywords and special characters
+- No Chinese characters in filenames
+
+### Python Package Structure
+- Each directory must contain `__init__.py`
+- Use relative imports: `from src.ollama_client import ...`
+- Maintain single responsibility per file
+- Keep files under 500 lines when possible
+
+### File Operations
+#### Before Moving Files
+1. Search all references: `grep -r "filename" . --include="*.py"`
+2. Update all import statements
+3. Update all path references
+4. Plan functionality verification
+
+#### After Moving Files
+1. Verify all imports work correctly
+2. Test main application startup
+3. Run relevant test scripts
+4. Update documentation
+
+#### Before Deleting Files
+1. Confirm no dependencies exist
+2. Backup important files
+3. Test functionality after deletion
+
+## Code Standards
+
+### Import Organization
+```python
+# Standard library imports
+import os
+import sys
+from pathlib import Path
+
+# Third-party imports
+import requests
+import tkinter as tk
+
+# Local module imports
+from src.ollama_client import OllamaClient
+from utils.resource_monitor import ResourceMonitor
+```
+
+### Error Handling
+- Include error handling for all file operations
+- Provide meaningful error messages
+- Use appropriate logging
+- Handle edge cases gracefully
+
+### Configuration Management
+- Extract hardcoded values to configuration
+- Use environment variables for sensitive data
+- Make paths relative and configurable
+
+## Module Architecture
+
+### Core Modules
+- **`ollama_client.py`**: Ollama API interactions
+  - `OllamaClient` class for API communication
+  - `get_available_models()` and `query_model()` functions
+- **`ollama_utils.py`**: Common utility functions
+  - Test prompts, data export, timestamp generation
+- **`resource_monitor.py`**: System resource monitoring
+  - GPU/CPU usage tracking and metrics
+
+### Application Modules
+- **`app.py`**: Main GUI application with parallel model testing
+- **`tests/performance.py`**: Batch performance testing tool
+
+## Development Guidelines
+
+### Code Quality
+- Follow PEP 8 style guidelines
+- Use type hints for function parameters and returns
+- Write descriptive docstrings for classes and functions
+- Maintain backward compatibility when possible
+
+### Testing
+- Create unit tests for new modules
+- Test integration between modules
+- Verify performance hasn't regressed
+- Test error handling and edge cases
+
+### Documentation
+- Update this file when changing project structure
+- Keep README.md synchronized with changes
+- Document new modules and functions
+- Maintain clear examples and usage instructions
+
+### README.md Guidelines
+- **Purpose**: Main project documentation for GitHub users
+- **Content**: Brief functional descriptions, no detailed code
+- **Structure**: Clear sections with emoji indicators for easy navigation
+- **Updates**: Sync with Project_rules.md changes and integrate new features directly
+- **Target Audience**: Developers and users discovering the project
+- **Key Sections**: Features, installation, quick start, usage examples
+- **File References**: Always use correct relative paths (e.g., `tests/performance.py`)
+- **Integration Policy**: New features must be integrated into README.md, not separate markdown files
+
+## AI Agent Integration Rules
+
+### Context Awareness
+- Maintain clear separation between modules
+- Use consistent naming conventions
+- Provide clear interfaces between components
+- Document dependencies and relationships
+
+### System Prompts
+- Define clear roles and responsibilities for each module
+- Specify input/output formats and expectations
+- Include error handling guidelines
+- Provide examples of proper usage
+
+### Memory Management
+- Implement efficient data structures
+- Use appropriate caching strategies
+- Handle large datasets efficiently
+- Monitor memory usage in resource-intensive operations
+
+### Tool Integration
+- Design modular tool interfaces
+- Ensure tools can be easily composed
+- Provide clear error reporting
+- Support both synchronous and asynchronous operations
+
+## Maintenance Checklist
+
+### Regular Checks
+- [ ] All import paths are correct
+- [ ] All file path references are updated
+- [ ] Python package structure is complete
+- [ ] Main application starts successfully
+- [ ] Test scripts run without errors
+- [ ] Documentation is current
+
+### Before Release
+- [ ] Run complete test suite
+- [ ] Verify all modules work together
+- [ ] Check performance benchmarks
+- [ ] Update version information
+- [ ] Review error handling
+- [ ] Test with different configurations
+
+## Prohibited Operations
+
+### Never Do
+- Create Python files in root directory (except main entry)
+- Create subdirectories deeper than 2 levels
+- Mix different file types in same directory
+- Use non-ASCII characters in filenames
+- Create circular dependencies between modules
+- Create separate markdown files for new features (integrate into README.md instead)
+
+### Avoid
+- Files larger than 500 lines
+- Complex nested directory structures
+- Hardcoded absolute paths
+- Missing error handling
+- Inconsistent naming conventions
+
+## Quick Reference
+
+### Essential Commands
+```bash
+# Check Python syntax
+python -m py_compile filename.py
+
+# Search for file references
+grep -r "filename" . --include="*.py"
+
+# Test imports
+python -c "import src.ollama_client"
+
+# Run main application
+python app.py
+
+# Run performance tests
+python tests/performance.py
+```
+
+### Common Patterns
+```python
+# Standard client usage
+client = OllamaClient(base_url="http://localhost:11434")
+models = client.get_available_models()
+result = client.query_model(model_name, prompt)
+
+# Resource monitoring
+monitor = ResourceMonitor()
+snapshot = monitor.get_snapshot()
+
+# Utility functions
+timestamp = create_timestamp()
+ensure_output_dir(Path("data/results"))
+```
+
+---
+
+**Note**: Always consult this document before making structural changes to the project. When in doubt, maintain consistency with existing patterns and update this file accordingly.

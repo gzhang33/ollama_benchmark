@@ -5,6 +5,7 @@ Interactive Model Comparison Tool with GUI
 Interactive model comparison tool - single interface input, all models respond in parallel
 """
 
+import asyncio
 import concurrent.futures
 import re
 import threading
@@ -15,10 +16,12 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import tkinter as tk
-from tkinter import ttk, scrolledtext, messagebox, filedialog
+from tkinter import ttk, messagebox
 
-from ollama_client import OllamaClient, get_available_models, query_model
-from ollama_utils import create_timestamp
+from src.ollama_client import OllamaClient, get_available_models, query_model
+from src.ollama_utils import create_timestamp
+from src.async_ollama_client import AsyncOllamaClient, ModelTaskQueue, StreamChunk
+from src.direct_ollama_tester import DirectOllamaTester
 
 
 @dataclass
@@ -31,6 +34,22 @@ class ModelResponse:
     tokens: int = 0
     tokens_per_second: float = 0.0
     error: str = ""
+    is_streaming: bool = False  # Whether streaming output is in progress
+    
+    def __post_init__(self):
+        """Parse response to extract think content"""
+        self.think_content = ""
+        self.main_response = self.response
+        
+        if self.response:
+            # Extract think content using regex
+            think_pattern = r'<think>(.*?)</think>'
+            think_matches = re.findall(think_pattern, self.response, re.DOTALL | re.IGNORECASE)
+            
+            if think_matches:
+                self.think_content = think_matches[0].strip()
+                # Remove think content from main response
+                self.main_response = re.sub(think_pattern, '', self.response, flags=re.DOTALL | re.IGNORECASE).strip()
     
     def is_loading(self) -> bool:
         """Check if response is still loading"""
@@ -39,6 +58,20 @@ class ModelResponse:
     def has_error(self) -> bool:
         """Check if response has an error"""
         return bool(self.error)
+    
+    def has_think_content(self) -> bool:
+        """Check if response contains think content"""
+        return bool(self.think_content.strip())
+    
+    def append_content(self, content: str):
+        """Append streaming content"""
+        self.response += content
+        # Re-parse think content
+        self.__post_init__()
+    
+    def set_streaming(self, streaming: bool):
+        """Set streaming status"""
+        self.is_streaming = streaming
     
     def to_markdown(self) -> str:
         """Convert response to markdown format"""
@@ -49,7 +82,11 @@ class ModelResponse:
         md += f"- Duration: {self.duration:.2f}s\n"
         md += f"- Tokens: {self.tokens}\n"
         md += f"- Speed: {self.tokens_per_second:.2f} tokens/s\n\n"
-        md += f"```\n{self.response}\n```\n"
+        
+        if self.has_think_content():
+            md += f"**Think Content:**\n```\n{self.think_content}\n```\n\n"
+        
+        md += f"**Response:**\n```\n{self.main_response}\n```\n"
         return md
 
 
@@ -651,6 +688,7 @@ class ModelResponseColumn:
         self.min_width = 300
         self.max_width = 600
         self.preferred_width = 400
+        self.show_think = False  # Default: hide think content
         
         self.container = tk.Frame(parent, bg='white', 
                                  relief='solid', borderwidth=1,
@@ -661,17 +699,29 @@ class ModelResponseColumn:
     
     def setup_ui(self):
         """Setup the column UI with adaptive sizing"""
-        # Header with model name - more compact
+        # Header with model name and think button
         header_frame = tk.Frame(self.container, bg='#f8f9fa', height=35)
         header_frame.pack(fill=tk.X)
         header_frame.pack_propagate(False)
         
+        # Model name label
         model_label = tk.Label(header_frame, 
                               text=self.model_response.model,
                               font=('Arial', 10, 'bold'),
                               bg='#f8f9fa', fg='#2c3e50',
-                              padx=8, wraplength=350)
+                              padx=8, wraplength=250)
         model_label.pack(side=tk.LEFT, pady=8)
+        
+        # Think button (only show if there's think content)
+        if self.model_response.has_think_content():
+            self.think_btn = tk.Button(header_frame,
+                                      text="💭 Think",
+                                      font=('Arial', 8),
+                                      bg='#3498db', fg='white',
+                                      relief='flat', cursor='hand2',
+                                      padx=8, pady=2,
+                                      command=self.toggle_think_content)
+            self.think_btn.pack(side=tk.RIGHT, padx=5, pady=6)
         
         # Content area with better text handling
         self.content_text = tk.Text(
@@ -705,27 +755,47 @@ class ModelResponseColumn:
         """Render content based on response state with improved text formatting"""
         # Ensure widget is in normal state before modifying
         self.content_text.config(state=tk.NORMAL)
-        self.content_text.delete(1.0, tk.END)
         
         if self.model_response.has_error():
             # Error state
+            self.content_text.delete(1.0, tk.END)
             self.content_text.insert(tk.END, f"❌ Error\n\n{self.model_response.error}")
             self.content_text.config(fg='#e74c3c')
             self.metrics_label.config(text="Failed")
         elif self.model_response.is_loading():
             # Loading state
+            self.content_text.delete(1.0, tk.END)
             self.content_text.insert(tk.END, "⏳ Loading...")
             self.content_text.config(fg='#7f8c8d')
             self.metrics_label.config(text="Processing...")
         else:
             # Success state - format text for better readability
-            response_text = self.model_response.response.strip()
-            if response_text:
-                # Insert response with proper formatting
-                self.content_text.insert(tk.END, response_text)
-            else:
-                self.content_text.insert(tk.END, "No response received")
+            if not self.model_response.is_streaming:
+                # 非流式：清空并重新渲染
+                self.content_text.delete(1.0, tk.END)
             
+            display_text = ""
+            
+            # Add think content if enabled and available
+            if self.show_think and self.model_response.has_think_content():
+                # Format think content with proper styling
+                think_lines = self.model_response.think_content.split('\n')
+                formatted_think = '\n'.join(f"💭 {line}" if line.strip() else "💭" for line in think_lines)
+                display_text += f"💭 Think Content:\n{formatted_think}\n\n"
+            
+            # Add main response
+            if self.model_response.main_response and self.model_response.main_response.strip():
+                display_text += self.model_response.main_response.strip()
+                print(f"[DEBUG] Displaying main_response for {self.model_response.model}: {len(self.model_response.main_response)} chars")
+            elif self.model_response.response and self.model_response.response.strip():
+                display_text += self.model_response.response.strip()
+                print(f"[DEBUG] Fallback to response for {self.model_response.model}: {len(self.model_response.response)} chars")
+            else:
+                display_text = "No response received"
+                print(f"[DEBUG] No response content for {self.model_response.model}")
+            
+            # 插入内容
+            self.content_text.insert(tk.END, display_text)
             self.content_text.config(fg='#2c3e50')
             
             # Format metrics more compactly
@@ -733,6 +803,8 @@ class ModelResponseColumn:
                 metrics_text = (f"{self.model_response.duration:.1f}s | "
                               f"{self.model_response.tokens} tokens | "
                               f"{self.model_response.tokens_per_second:.1f} tok/s")
+            elif self.model_response.is_streaming:
+                metrics_text = "Streaming..."
             else:
                 metrics_text = "Completed"
             self.metrics_label.config(text=metrics_text)
@@ -746,6 +818,9 @@ class ModelResponseColumn:
         # Update display
         self.content_text.update_idletasks()
         self.container.update_idletasks()
+        
+        # 自动滚动到底部
+        self.content_text.see(tk.END)
     
     def auto_resize_text_widget(self):
         """Automatically resize text widget to fill available space"""
@@ -770,6 +845,20 @@ class ModelResponseColumn:
         except Exception as e:
             # Fallback to reasonable height if calculation fails
             self.content_text.config(height=15)
+    
+    def toggle_think_content(self):
+        """Toggle the display of think content"""
+        self.show_think = not self.show_think
+        
+        # Update button text and color
+        if hasattr(self, 'think_btn'):
+            if self.show_think:
+                self.think_btn.config(text="💭 Hide Think", bg='#e74c3c')
+            else:
+                self.think_btn.config(text="💭 Think", bg='#3498db')
+        
+        # Re-render content with new setting
+        self.render_content()
     
     def update_response(self, model_response: ModelResponse):
         """Update the response and re-render"""
@@ -911,10 +1000,11 @@ class ModelResponseRow:
 class ChatInterfaceView:
     """Chat interface view with conversation history and bottom input"""
     
-    def __init__(self, parent, on_submit_callback, on_clear_callback):
+    def __init__(self, parent, on_submit_callback, on_clear_callback, on_toggle_method_callback=None):
         self.parent = parent
         self.on_submit_callback = on_submit_callback
         self.on_clear_callback = on_clear_callback
+        self.on_toggle_method_callback = on_toggle_method_callback
         
         self.container = tk.Frame(parent, bg='white')
         self.conversation_widgets = []
@@ -935,6 +1025,15 @@ class ChatInterfaceView:
                             padx=12, pady=8,
                             command=self.on_clear_callback)
         clear_btn.pack(side=tk.LEFT, padx=8)
+        
+        # Test method toggle button
+        self.method_btn = tk.Button(toolbar_frame, text="⚡ Direct Method",
+                                  font=('Arial', 9),
+                                  bg='#27ae60', fg='white',
+                                  relief='flat', cursor='hand2',
+                                  padx=12, pady=8,
+                                  command=self.on_toggle_method_callback if self.on_toggle_method_callback else lambda: None)
+        self.method_btn.pack(side=tk.LEFT, padx=8)
         
         # Progress bar and status (initially hidden)
         self.progress_frame = tk.Frame(toolbar_frame, bg='#f8f9fa')
@@ -1268,16 +1367,30 @@ class ModelComparisonGUI:
         # Core properties
         self.base_url = "http://localhost:11434"
         self.client = OllamaClient(self.base_url)
-        self.output_dir = Path("app_results")
+        self.async_client = None  # 异步客户端
+        self.task_queue = None    # 任务队列
+        self.direct_tester = DirectOllamaTester()  # 直接方法测试器
+        self.output_dir = Path("data/app_results")
         self.output_dir.mkdir(exist_ok=True)
         self.models = []
         
         # State management
         self.state_manager = StateManager()
         
+        # 流式响应管理
+        self.current_responses: Dict[str, ModelResponse] = {}
+        self.streaming_active = False
+        
+        # 方法选择：'http' 或 'direct'
+        self.test_method = 'direct'  # 默认使用直接方法（已优化）
+        self.optimization_enabled = True  # 启用性能优化
+        
         # Setup GUI
+        print("Setting up GUI...")
         self.setup_gui()
+        print("GUI setup complete, loading models...")
         self.load_models()
+        print("Models loaded")
     
     def setup_gui(self):
         """Setup the main GUI with responsive design"""
@@ -1286,7 +1399,8 @@ class ModelComparisonGUI:
         
         # Set minimum window size and start maximized
         self.root.minsize(800, 600)
-        self.root.state('zoomed')  # Start maximized on Windows
+        # self.root.state('zoomed')  # Start maximized on Windows - commented out for debugging
+        self.root.geometry("1200x800")  # Set explicit size for debugging
         self.root.configure(bg='#f8f9fa')
         
         # Handle window resize events
@@ -1306,7 +1420,8 @@ class ModelComparisonGUI:
         self.chat_view = ChatInterfaceView(
             self.main_container,
             on_submit_callback=self.handle_chat_submit,
-            on_clear_callback=self.handle_clear_conversation
+            on_clear_callback=self.handle_clear_conversation,
+            on_toggle_method_callback=self.handle_toggle_method
         )
         
         # Show landing view initially
@@ -1390,12 +1505,39 @@ class ModelComparisonGUI:
         self.chat_view.clear_conversation()
         self.switch_to_landing()
     
+    def handle_toggle_method(self):
+        """Handle test method toggle"""
+        self.toggle_test_method()
+        
+        # 更新按钮显示
+        if hasattr(self.chat_view, 'method_btn'):
+            if self.test_method == 'direct':
+                self.chat_view.method_btn.config(text="⚡ Direct Method", bg='#27ae60')
+            else:
+                self.chat_view.method_btn.config(text="🌐 HTTP Method", bg='#3498db')
+        
+        print(f"[DEBUG] Method switched to: {self.test_method}")
+    
+    def toggle_test_method(self):
+        """切换测试方法（HTTP vs 直接方法）"""
+        if self.test_method == 'direct':
+            self.test_method = 'http'
+            print("[DEBUG] Switched to HTTP method")
+        else:
+            self.test_method = 'direct'
+            print("[DEBUG] Switched to Direct method")
+    
+    def get_current_test_method(self) -> str:
+        """获取当前测试方法"""
+        return self.test_method
+    
     def execute_query(self, query: str):
-        """Execute a query against selected models"""
+        """Execute a query against selected models with streaming support"""
         selected_models = self.state_manager.get_selected_models()
         
         print(f"[DEBUG] Executing query: {query}")
         print(f"[DEBUG] Selected models: {selected_models}")
+        print(f"[DEBUG] Test method: {self.test_method}")
         
         if not selected_models:
             messagebox.showwarning("Warning", "No models selected")
@@ -1404,45 +1546,253 @@ class ModelComparisonGUI:
         # Add query bubble to chat
         self.chat_view.add_user_query(query)
         
-        # Create loading responses
+        # Create loading responses with streaming support
         loading_responses = [
-            ModelResponse(model=model, success=False, error="", response="Loading...")
+            ModelResponse(model=model, success=False, error="", response="", is_streaming=True)
             for model in selected_models
         ]
         print(f"[DEBUG] Created {len(loading_responses)} loading responses")
         self.chat_view.add_model_responses(loading_responses)
         
+        # Initialize current responses dict and start times
+        self.current_responses = {resp.model: resp for resp in loading_responses}
+        self.model_start_times = {}  # Track when each model starts processing
+        self.output_start_times = {}  # Track when model starts outputting content
+        self.streaming_active = True
+        
         # Disable input and show progress
         self.chat_view.disable_input()
-        self.chat_view.show_progress(f"Querying {len(selected_models)} models...")
+        self.chat_view.show_progress(f"Querying {len(selected_models)} models using {self.test_method} method...")
         
-        # Execute queries in background thread
-        def query_thread():
-            try:
-                print(f"[DEBUG] Starting parallel query...")
-                self.root.after(0, lambda: self.chat_view.update_progress("Processing queries..."))
+        # 根据测试方法选择执行方式
+        if self.test_method == 'direct':
+            # 使用直接方法执行查询
+            def direct_query_thread():
+                try:
+                    self.direct_execute_query(query, selected_models)
+                except Exception as e:
+                    print(f"[DEBUG] Direct query failed with error: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    error_msg = str(e)
+                    # 使用默认的事件循环来避免变量作用域问题
+                    self.root.after(0, lambda em=error_msg: messagebox.showerror("Error", f"Query failed: {em}"))
+                finally:
+                    self.root.after(0, self.query_complete)
+            
+            threading.Thread(target=direct_query_thread, daemon=True).start()
+        else:
+            # 使用HTTP异步方法执行查询
+            def async_query_thread():
+                try:
+                    # 创建新的事件循环
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    
+                    # 运行异步查询
+                    loop.run_until_complete(self.async_execute_query(query, selected_models))
+                    
+                except Exception as e:
+                    print(f"[DEBUG] Async query failed with error: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    self.root.after(0, lambda: messagebox.showerror("Error", f"Query failed: {str(e)}"))
+                finally:
+                    self.root.after(0, self.query_complete)
+                    loop.close()
+            
+            threading.Thread(target=async_query_thread, daemon=True).start()
+    
+    def direct_execute_query(self, query: str, selected_models: List[str]):
+        """使用直接方法执行查询"""
+        try:
+            results = []
+            
+            for i, model in enumerate(selected_models):
+                print(f"[DEBUG] Executing direct query for model: {model}")
+                self.root.after(0, lambda m=model: self.chat_view.update_progress(f"Testing {m} with direct method..."))
                 
-                results = self.parallel_query_models(selected_models, query)
-                print(f"[DEBUG] Query complete. Results: {len(results)} responses")
-                for r in results:
-                    print(f"[DEBUG]   - {r.get('model')}: success={r.get('success')}, response_len={len(r.get('response', ''))}")
+                # 记录开始时间
+                start_time = time.perf_counter()
+                self.model_start_times[model] = start_time
                 
-                # Add to conversation history
-                self.root.after(0, lambda: self.chat_view.update_progress("Updating interface..."))
-                self.state_manager.add_conversation_entry(query, results)
+                # 使用优化版本的直接方法测试
+                result = self.direct_tester.test_output_generation_time_optimized(
+                    model, query, num_predict=400, use_cache=self.optimization_enabled
+                )
                 
-                # Update UI with results
-                print(f"[DEBUG] Updating UI with results...")
-                self.root.after(0, lambda: self.update_latest_responses(results))
-            except Exception as e:
-                print(f"[DEBUG] Query failed with error: {e}")
-                import traceback
-                traceback.print_exc()
-                self.root.after(0, lambda: messagebox.showerror("Error", f"Query failed: {str(e)}"))
-            finally:
-                self.root.after(0, self.query_complete)
-        
-        threading.Thread(target=query_thread, daemon=True).start()
+                # 计算总时间
+                total_time = time.perf_counter() - start_time
+                
+                # 更新响应
+                if model in self.current_responses:
+                    response = self.current_responses[model]
+                    response.success = result.get("success", False)
+
+                    # 确保有response字段，使用多种备选方案
+                    if "response" in result and result["response"]:
+                        response.response = result["response"]
+                        print(f"[DEBUG] Using response field: {len(result['response'])} chars")
+                    elif "raw_output" in result and result["raw_output"]:
+                        response.response = result["raw_output"]
+                        print(f"[DEBUG] Using raw_output field: {len(result['raw_output'])} chars")
+                    else:
+                        response.response = "No response content available"
+                        print(f"[DEBUG] No response content available for {model}")
+
+                    print(f"[DEBUG] Final response length for {model}: {len(response.response)}")
+
+                    # 确保main_response正确设置
+                    response.__post_init__()
+                    print(f"[DEBUG] After post_init - main_response length: {len(response.main_response)}")
+
+                    response.duration = result.get("eval_duration", 0.0)
+                    response.tokens = result.get("eval_count", 0)
+                    response.tokens_per_second = result.get("eval_rate", 0.0)
+                    response.set_streaming(False)
+
+                    if not result.get("success", False):
+                        response.error = result.get("error", "Unknown error")
+
+                    # 更新UI
+                    self.root.after(0, lambda m=model: self.update_streaming_response(m))
+
+                    print(f"[DEBUG] Direct method result - Model: {model}, Success: {result.get('success', False)}, "
+                          f"Tokens: {result.get('eval_count', 0)}, Duration: {result.get('eval_duration', 0.0):.4f}s, "
+                          f"Speed: {result.get('eval_rate', 0.0):.2f} tokens/s")
+                
+                # 转换为兼容格式
+                results.append({
+                    "model": model,
+                    "success": result.get("success", False),
+                    "response": result.get("response", ""),
+                    "duration": result.get("eval_duration", 0.0),
+                    "tokens": result.get("eval_count", 0),
+                    "tokens_per_second": result.get("eval_rate", 0.0),
+                    "error": result.get("error", "")
+                })
+            
+            # 添加到对话历史
+            self.root.after(0, lambda: self.state_manager.add_conversation_entry(query, results))
+            self.root.after(0, lambda: self.chat_view.update_progress("All direct queries completed"))
+            
+        except Exception as e:
+            print(f"[DEBUG] Direct execution failed: {e}")
+            raise
+    
+    async def async_execute_query(self, query: str, selected_models: List[str]):
+        """异步执行查询"""
+        try:
+            # 初始化异步客户端
+            if not self.async_client:
+                self.async_client = AsyncOllamaClient(self.base_url)
+                self.task_queue = ModelTaskQueue(self.async_client)
+            
+            async with self.async_client:
+                self.root.after(0, lambda: self.chat_view.update_progress("Initializing async queries..."))
+                
+                # 定义回调函数
+                async def on_model_start(model: str, index: int):
+                    print(f"[DEBUG] Model {model} started (index: {index})")
+                    # Record when model starts processing (but don't start timing yet - wait for first output)
+                    self.model_start_times[model] = time.perf_counter()
+                    self.root.after(0, lambda: self.chat_view.update_progress(f"Starting {model}..."))
+                
+                async def on_model_chunk(chunk: StreamChunk):
+                    try:
+                        if chunk.model in self.current_responses:
+                            response = self.current_responses[chunk.model]
+                            if not chunk.done:
+                                # Check if this is the first chunk with actual content (start timing here)
+                                if chunk.model not in self.output_start_times and chunk.content.strip():
+                                    self.output_start_times[chunk.model] = time.perf_counter()
+                                    print(f"[DEBUG] Started output timing for model: {chunk.model} (first content chunk)")
+                                    print(f"[DEBUG] Content: '{chunk.content[:50]}...'")
+
+                                # Append streaming content
+                                response.append_content(chunk.content)
+                                response.set_streaming(True)
+
+                                print(f"[DEBUG] Received chunk - Model: {chunk.model}, Content length: {len(chunk.content)}, Done: {chunk.done}")
+                            else:
+                                # Streaming completed
+                                response.set_streaming(False)
+                                response.success = True
+                                response.tokens = chunk.tokens
+
+                                # Calculate duration from output start time (excludes model loading time)
+                                if chunk.model in self.output_start_times:
+                                    output_start = self.output_start_times[chunk.model]
+                                    response.duration = time.perf_counter() - output_start
+                                    print(f"[DEBUG] Using output start time for {chunk.model}: {response.duration:.4f}s")
+                                else:
+                                    # Fallback to model start time if no output time recorded
+                                    model_start = self.model_start_times.get(chunk.model, time.perf_counter())
+                                    response.duration = time.perf_counter() - model_start
+                                    print(f"[DEBUG] Using model start time for {chunk.model} (fallback): {response.duration:.4f}s")
+
+                                response.tokens_per_second = response.tokens / response.duration if response.duration > 0 else 0
+                                print(f"[DEBUG] Streaming completed - Model: {chunk.model}, tokens: {response.tokens}, duration: {response.duration:.2f}s, speed: {response.tokens_per_second:.2f} tokens/s")
+                                print(f"[DEBUG] Response state - success: {response.success}, streaming: {response.is_streaming}, error: {response.error}")
+
+                            # Update UI (in main thread)
+                            self.root.after(0, lambda: self.update_streaming_response(chunk.model))
+                    except Exception as e:
+                        print(f"[DEBUG] Chunk processing failed: {e}")
+                
+                async def on_model_complete(model: str, result: Dict[str, Any], index: int):
+                    print(f"[DEBUG] Model {model} completed (index: {index})")
+                    if model in self.current_responses:
+                        response = self.current_responses[model]
+                        response.success = result['success']
+                        response.duration = result['duration']
+                        response.tokens_per_second = result['tokens_per_second']
+                        if not result['success']:
+                            response.error = result.get('error', 'Unknown error')
+                
+                # 执行顺序任务
+                results = await self.task_queue.execute_sequential_tasks(
+                    selected_models,
+                    query,
+                    on_model_start=on_model_start,
+                    on_model_chunk=on_model_chunk,
+                    on_model_complete=on_model_complete
+                )
+                
+                # 添加到对话历史
+                self.root.after(0, lambda: self.state_manager.add_conversation_entry(query, results))
+                self.root.after(0, lambda: self.chat_view.update_progress("All queries completed"))
+                
+        except Exception as e:
+            print(f"[DEBUG] Async execution failed: {e}")
+            raise
+    
+    def update_streaming_response(self, model: str):
+        """更新流式响应显示"""
+        if model in self.current_responses:
+            response = self.current_responses[model]
+
+            # 确保在主线程中更新UI
+            def update_ui():
+                try:
+                    # 找到对应的UI组件并更新
+                    if self.chat_view.conversation_widgets:
+                        last_widget = self.chat_view.conversation_widgets[-1]
+                        if isinstance(last_widget, ModelResponseRow):
+                            for column in last_widget.columns:
+                                if column.model_response.model == model:
+                                    print(f"[DEBUG] Update UI - Model: {model}, Response length: {len(response.response)}, Main response length: {len(response.main_response)}, Status: {'Complete' if response.success else 'Error' if response.error else 'Loading'}")
+                                    column.update_response(response)
+                                    break
+                        else:
+                            print(f"[DEBUG] Last widget is not ModelResponseRow: {type(last_widget)}")
+                    else:
+                        print("[DEBUG] No conversation widgets")
+                except Exception as e:
+                    print(f"[DEBUG] UI update failed: {e}")
+
+            # Execute UI update in main thread
+            self.root.after(0, update_ui)
     
     def parallel_query_models(self, models: List[str], prompt: str) -> List[Dict[str, Any]]:
         """Query multiple models in parallel"""
@@ -1506,9 +1856,27 @@ class ModelComparisonGUI:
     
     def query_complete(self):
         """Handle query completion"""
-        self.chat_view.hide_progress()
-        self.chat_view.enable_input()
-        self.chat_view.clear_input()
+        try:
+            self.chat_view.hide_progress()
+            self.chat_view.enable_input()
+            self.chat_view.clear_input()
+            self.streaming_active = False
+
+            # 清理模型开始时间
+            if hasattr(self, 'model_start_times'):
+                self.model_start_times.clear()
+
+            # 清理输出开始时间
+            if hasattr(self, 'output_start_times'):
+                self.output_start_times.clear()
+
+            # 清理当前响应
+            if hasattr(self, 'current_responses'):
+                self.current_responses.clear()
+
+            print("[DEBUG] Query completed, all resources cleaned")
+        except Exception as e:
+            print(f"[DEBUG] Query cleanup failed: {e}")
     
     def load_models(self):
         """Load available models from Ollama"""
@@ -1571,9 +1939,18 @@ class ModelComparisonGUI:
 
 
 def main():
-    """主函数"""
-    app = ModelComparisonGUI()
-    app.run()
+    """Main function"""
+    try:
+        print("Initializing GUI application...")
+        app = ModelComparisonGUI()
+        print("GUI application initialized")
+        print("Starting GUI main loop...")
+        app.run()
+        print("GUI main loop ended")
+    except Exception as e:
+        print(f"GUI startup failed: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 if __name__ == "__main__":

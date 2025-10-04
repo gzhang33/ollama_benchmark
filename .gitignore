@@ -43,3 +43,7 @@ Thumbs.db
 # Test results (optional - uncomment if you don't want to track test results)
 # speed_test_results/
 # analysis_results/
+
+# ai agent rules
+# .cursor/
+# .kiro/
