@@ -36,19 +36,88 @@ class ModelResponse:
     is_streaming: bool = False  # Whether streaming output is in progress
     
     def __post_init__(self):
-        """Parse response to extract think content"""
+        """Parse response to extract think content using official XML format"""
         self.think_content = ""
         self.main_response = self.response
         
         if self.response:
-            # Extract think content using regex
-            think_pattern = r'<think>(.*?)</think>'
-            think_matches = re.findall(think_pattern, self.response, re.DOTALL | re.IGNORECASE)
+            # 使用官方标准的XML标签格式检测think内容
+            self._extract_think_content()
+    
+    def _extract_think_content(self):
+        """使用官方标准XML格式提取think内容"""
+        # 官方标准的think标签格式（按优先级排序）
+        think_patterns = [
+            r'<thinking>(.*?)</thinking>',  # 最常用的thinking标签
+            r'<reasoning>(.*?)</reasoning>',  # reasoning标签
+            r'<think>(.*?)</think>',  # 标准think标签
+            r'<thought>(.*?)</thought>',  # thought标签
+        ]
+        
+        # 尝试匹配各种think标签
+        for pattern in think_patterns:
+            matches = re.findall(pattern, self.response, re.DOTALL | re.IGNORECASE)
+            if matches:
+                self.think_content = matches[0].strip()
+                # 从主响应中移除think内容
+                self.main_response = re.sub(pattern, '', self.response, flags=re.DOTALL | re.IGNORECASE).strip()
+                return
+        
+        # 如果没有找到标准XML标签，尝试检测非标准格式
+        self._detect_non_standard_think()
+    
+    def _detect_non_standard_think(self):
+        """检测非标准格式的think内容（作为备用方案）"""
+        # 检测常见的推理开始模式
+        think_start_patterns = [
+            r'^嗯.*?用户.*?我需要.*?想一想',
+            r'^我现在得.*?想一想',
+            r'^让我.*?分析',
+            r'^首先.*?我需要',
+        ]
+        
+        lines = self.response.split('\n')
+        start_idx = None
+        
+        # 查找think内容的开始
+        for i, line in enumerate(lines):
+            line = line.strip()
+            if any(re.search(pattern, line, re.IGNORECASE) for pattern in think_start_patterns):
+                start_idx = i
+                break
+        
+        if start_idx is not None:
+            # 查找think内容的结束（通常以"总结"、"因此"等结尾）
+            end_patterns = [r'总结.*?我的回应', r'因此.*?我需要', r'所以.*?我的回答']
+            end_idx = start_idx
             
-            if think_matches:
-                self.think_content = think_matches[0].strip()
-                # Remove think content from main response
-                self.main_response = re.sub(think_pattern, '', self.response, flags=re.DOTALL | re.IGNORECASE).strip()
+            for i in range(start_idx + 1, len(lines)):
+                line = lines[i].strip()
+                if any(re.search(pattern, line, re.IGNORECASE) for pattern in end_patterns):
+                    end_idx = i
+                    break
+                # 如果遇到明显的结论性语句
+                elif re.search(r'总结|因此|所以|最终|我的回应|我的回答', line, re.IGNORECASE):
+                    end_idx = i
+                    break
+            
+            # 提取think内容
+            think_lines = lines[start_idx:end_idx + 1]
+            self.think_content = '\n'.join(think_lines).strip()
+            
+            # 从主响应中移除think内容
+            main_lines = lines[:start_idx] + lines[end_idx + 1:]
+            self.main_response = '\n'.join(main_lines).strip()
+            
+            # 确保主响应不为空
+            if not self.main_response.strip():
+                # 查找可能的最终回答
+                for i in range(end_idx + 1, len(lines)):
+                    line = lines[i].strip()
+                    if line and len(line) > 5:  # 确保不是空行或太短的内容
+                        self.main_response = line
+                        break
+    
     
     def is_loading(self) -> bool:
         """Check if response is still loading"""
@@ -65,8 +134,13 @@ class ModelResponse:
     def append_content(self, content: str):
         """Append streaming content with optimized parsing"""
         self.response += content
-        # Only re-parse think content if we detect think tags
-        if '<think>' in content or '</think>' in content:
+        # 检测标准XML think标签
+        think_tags = ['<think>', '</think>', '<thinking>', '</thinking>', 
+                     '<reasoning>', '</reasoning>', '<thought>', '</thought>']
+        if any(tag in content for tag in think_tags):
+            self.__post_init__()
+        # 检测非标准think内容的关键词
+        elif any(keyword in content for keyword in ['嗯', '我现在得', '让我', '首先', '总结']):
             self.__post_init__()
     
     def set_streaming(self, streaming: bool):
@@ -712,7 +786,7 @@ class ModelResponseColumn:
                               padx=8, wraplength=250)
         model_label.pack(side=tk.LEFT, pady=8)
         
-        # Think button (only show if there's think content)
+        # 优化4: Think button (only show if there's think content) - 默认隐藏思考内容
         if self.model_response.has_think_content():
             self.think_btn = tk.Button(header_frame,
                                       text="💭 Think",
@@ -722,8 +796,10 @@ class ModelResponseColumn:
                                       padx=8, pady=2,
                                       command=self.toggle_think_content)
             self.think_btn.pack(side=tk.RIGHT, padx=5, pady=6)
+            # 确保思考内容默认隐藏
+            self.show_think = False
         
-        # Content area with better text handling
+        # Content area with better text handling - 修复2: 设置只读状态
         self.content_text = tk.Text(
             self.container,
             font=('Arial', 9),
@@ -732,7 +808,8 @@ class ModelResponseColumn:
             relief='flat',
             padx=8, pady=8,
             width=50,  # Increased width for better text display
-            height=15  # Set reasonable minimum height
+            height=15,  # Set reasonable minimum height
+            state=tk.DISABLED  # 设置只读状态，防止用户编辑LLM输出
         )
         self.content_text.pack(fill=tk.BOTH, expand=True, padx=3, pady=(3, 0))
         
@@ -750,10 +827,14 @@ class ModelResponseColumn:
         
         # Render content based on state
         self.render_content()
+        
+        # 修复白屏问题：强制更新UI
+        self.content_text.update_idletasks()
+        self.container.update_idletasks()
     
     def render_content(self):
         """Render content based on response state with optimized performance"""
-        # Ensure widget is in normal state before modifying
+        # 修复2: 确保widget在修改前处于正常状态，修改后恢复只读状态
         self.content_text.config(state=tk.NORMAL)
         
         if self.model_response.has_error():
@@ -774,7 +855,7 @@ class ModelResponseColumn:
                 # 非流式：清空并重新渲染
                 self.content_text.delete(1.0, tk.END)
             
-            # 优化文本构建，减少字符串操作
+            # 优化3: 使用Markdown渲染器进行正确的markdown渲染
             display_parts = []
             
             # Add think content if enabled and available
@@ -793,7 +874,19 @@ class ModelResponseColumn:
             
             # 一次性插入所有内容
             display_text = ''.join(display_parts)
-            self.content_text.insert(tk.END, display_text)
+            
+            # 修复3: 使用Markdown渲染器进行渲染
+            try:
+                # 创建Markdown渲染器实例
+                renderer = MarkdownRenderer(self.content_text)
+                renderer.render_markdown(display_text)
+            except Exception as e:
+                # 如果Markdown渲染失败，回退到普通文本
+                print(f"[DEBUG] Markdown rendering failed: {e}")
+                # 简单处理markdown格式
+                processed_text = self._process_markdown_simple(display_text)
+                self.content_text.insert(tk.END, processed_text)
+            
             self.content_text.config(fg='#2c3e50')
             
             # Format metrics more compactly
@@ -813,6 +906,29 @@ class ModelResponseColumn:
             self.content_text.config(state=tk.NORMAL)
             self.auto_resize_text_widget()
             self.content_text.see(tk.END)
+        
+        # 修复2: 恢复只读状态，防止用户编辑LLM输出
+        self.content_text.config(state=tk.DISABLED)
+    
+    def _process_markdown_simple(self, text: str) -> str:
+        """简单的markdown处理，将markdown格式转换为普通文本"""
+        import re
+        
+        # 处理粗体 **text** -> text
+        text = re.sub(r'\*\*([^*]+)\*\*', r'\1', text)
+        text = re.sub(r'__([^_]+)__', r'\1', text)
+        
+        # 处理斜体 *text* -> text
+        text = re.sub(r'\*([^*]+)\*', r'\1', text)
+        text = re.sub(r'_([^_]+)_', r'\1', text)
+        
+        # 处理代码 `code` -> code
+        text = re.sub(r'`([^`]+)`', r'\1', text)
+        
+        # 处理标题 # -> 移除
+        text = re.sub(r'^#+\s*', '', text, flags=re.MULTILINE)
+        
+        return text
     
     def auto_resize_text_widget(self):
         """Automatically resize text widget to fill available space"""
@@ -855,7 +971,39 @@ class ModelResponseColumn:
     def update_response(self, model_response: ModelResponse):
         """Update the response and re-render"""
         self.model_response = model_response
+        
+        # 修复4: 动态显示think按钮
+        self._update_think_button()
+        
         self.render_content()
+    
+    def _update_think_button(self):
+        """动态更新think按钮的显示"""
+        # 检查是否需要显示think按钮
+        has_think = self.model_response.has_think_content()
+        
+        if has_think and not hasattr(self, 'think_btn'):
+            # 需要显示按钮但还没有创建
+            header_frame = self.container.winfo_children()[0]  # 获取header frame
+            self.think_btn = tk.Button(header_frame,
+                                      text="💭 Think",
+                                      font=('Arial', 8),
+                                      bg='#3498db', fg='white',
+                                      relief='flat', cursor='hand2',
+                                      padx=8, pady=2,
+                                      command=self.toggle_think_content)
+            self.think_btn.pack(side=tk.RIGHT, padx=5, pady=6)
+            self.show_think = False
+        elif not has_think and hasattr(self, 'think_btn'):
+            # 不需要显示按钮但已经创建了，销毁它
+            self.think_btn.destroy()
+            delattr(self, 'think_btn')
+        elif has_think and hasattr(self, 'think_btn'):
+            # 确保按钮状态正确
+            if self.show_think:
+                self.think_btn.config(text="💭 Hide Think", bg='#e74c3c')
+            else:
+                self.think_btn.config(text="💭 Think", bg='#3498db')
     
     def resize_column(self, new_width: int):
         """Resize column to new width"""
@@ -932,6 +1080,11 @@ class ModelResponseRow:
             column.container.pack(side=tk.LEFT, padx=3, pady=3, fill=tk.BOTH, expand=True)
             column.container.pack_propagate(False)
             self.columns.append(column)
+        
+        # 修复白屏问题：强制更新布局
+        self.columns_frame.update_idletasks()
+        self.canvas.update_idletasks()
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
     
     def update_column_widths(self, new_width: int):
         """Update all column widths to new value"""
@@ -1017,13 +1170,13 @@ class ChatInterfaceView:
                             command=self.on_clear_callback)
         clear_btn.pack(side=tk.LEFT, padx=8)
         
-        # HTTP method indicator (read-only)
-        self.method_label = tk.Label(toolbar_frame, text="🌐 HTTP Method",
-                                   font=('Arial', 9),
-                                   bg='#3498db', fg='white',
-                                   relief='flat',
-                                   padx=12, pady=8)
-        self.method_label.pack(side=tk.LEFT, padx=8)
+        # 优化5: 删除HTTP method indicator - 移除HTTP方法显示
+        # self.method_label = tk.Label(toolbar_frame, text="🌐 HTTP Method",
+        #                            font=('Arial', 9),
+        #                            bg='#3498db', fg='white',
+        #                            relief='flat',
+        #                            padx=12, pady=8)
+        # self.method_label.pack(side=tk.LEFT, padx=8)
         
         # Progress bar and status (initially hidden)
         self.progress_frame = tk.Frame(toolbar_frame, bg='#f8f9fa')
@@ -1075,7 +1228,10 @@ class ChatInterfaceView:
     
     def _on_canvas_configure(self, event):
         """Handle canvas resize"""
+        # 修复白屏问题：确保canvas窗口正确配置
         self.canvas.itemconfig(self.canvas_window, width=event.width)
+        # 强制更新scroll region
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
     
     def _on_scrollable_configure(self, event):
         """Handle scrollable frame configuration"""
@@ -1095,6 +1251,16 @@ class ChatInterfaceView:
         # Pack with full expansion and minimal padding to maximize space usage
         response_row.pack(fill=tk.BOTH, expand=True, padx=2, pady=(2, 5))
         self.conversation_widgets.append(response_row)
+        
+        # 修复白屏问题：强制更新UI布局
+        self.scrollable_frame.update_idletasks()
+        self.canvas.update_idletasks()
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        
+        # 确保canvas窗口正确配置
+        canvas_height = max(400, self.canvas.winfo_height())
+        self.canvas.itemconfig(self.canvas_window, height=canvas_height)
+        
         self.auto_scroll_to_bottom()
     
     def render_conversation(self, conversation_history: List[ConversationEntry]):
@@ -1515,7 +1681,7 @@ class ModelComparisonGUI:
         # Add query bubble to chat
         self.chat_view.add_user_query(query)
         
-        # Create loading responses with streaming support
+        # Create loading responses with streaming support - 立即显示输出框
         loading_responses = [
             ModelResponse(model=model, success=False, error="", response="", is_streaming=True)
             for model in selected_models
@@ -1523,15 +1689,19 @@ class ModelComparisonGUI:
         print(f"[DEBUG] Created {len(loading_responses)} loading responses")
         self.chat_view.add_model_responses(loading_responses)
         
+        # 修复白屏问题：强制刷新整个UI
+        self.root.update_idletasks()
+        self.root.update()
+        
         # Initialize current responses dict and start times
         self.current_responses = {resp.model: resp for resp in loading_responses}
         self.model_start_times = {}  # Track when each model starts processing
         self.output_start_times = {}  # Track when model starts outputting content
         self.streaming_active = True
         
-        # Disable input and show progress
-        self.chat_view.disable_input()
-        self.chat_view.show_progress(f"Querying {len(selected_models)} models using HTTP method...")
+        # 优化1: 不禁用输入，允许随时编辑follow-up question
+        # self.chat_view.disable_input()  # 移除这行，允许随时编辑
+        self.chat_view.show_progress(f"Querying {len(selected_models)} models...")
         
         # 使用HTTP异步方法执行查询
         def async_query_thread():
@@ -1749,7 +1919,8 @@ class ModelComparisonGUI:
         """Handle query completion with optimized cleanup"""
         try:
             self.chat_view.hide_progress()
-            self.chat_view.enable_input()
+            # 优化2: 不禁用输入，允许随时编辑follow-up question
+            # self.chat_view.enable_input()  # 移除这行，因为输入始终可用
             self.chat_view.clear_input()
             self.streaming_active = False
 
