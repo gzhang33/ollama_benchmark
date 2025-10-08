@@ -173,44 +173,27 @@ class DirectOllamaTester:
             }
     
     def _parse_verbose_output(self, output: str) -> Dict[str, float]:
-        """解析ollama --verbose的输出"""
+        """解析ollama --verbose的输出（优化版本：只提取关键指标）"""
         metrics = {}
 
-        # 清理ANSI控制字符（更彻底的清理）
+        # 简化清理：只移除基本的ANSI控制字符
         clean_output = re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', output)
-        clean_output = re.sub(r'\x1b\[[0-9;]*[mGKH]', '', clean_output)
-        clean_output = re.sub(r'\x1b\][0-9;]*', '', clean_output)
-        clean_output = re.sub(r'\x1b[0-9;]*', '', clean_output)
-        # 清理残留的控制字符序列
-        clean_output = re.sub(r'\[\?[0-9;]*[hl]', '', clean_output)
-        clean_output = re.sub(r'\[[0-9;]*[mGKH]', '', clean_output)
-        # 清理其他可能的控制字符
         clean_output = re.sub(r'[^\x20-\x7E\n\r\t]', '', clean_output)
 
-        # 使用正则表达式直接从整个输出中提取，注意匹配最末尾的值
-        patterns = {
-            "total_duration": r"total duration:\s+([\d.]+)s",
-            "load_duration": r"load duration:\s+([\d.]+)ms",
-            "prompt_eval_count": r"prompt eval count:\s+(\d+)\s+token\(s\)",
-            "prompt_eval_duration": r"prompt eval duration:\s+([\d.]+)ms",
-            "eval_count": r"^eval count:\s+(\d+)\s+token\(s\)",  # 匹配行开头的eval count（不是prompt eval）
-            "eval_duration": r"^eval duration:\s+([\d.]+)ms",     # 匹配行开头的eval duration（不是prompt eval）
-            "eval_rate": r"^eval rate:\s+([\d.]+)\s+tokens/s"   # 匹配行开头的eval rate（不是prompt eval）
+        # 只提取关键性能指标，减少正则表达式匹配
+        key_patterns = {
+            "eval_count": r"eval count:\s+(\d+)",
+            "eval_duration": r"eval duration:\s+([\d.]+)ms",
+            "eval_rate": r"eval rate:\s+([\d.]+)\s+tokens/s"
         }
 
-        # 记录哪些模式匹配到了毫秒格式
-        ms_patterns = {"load_duration", "prompt_eval_duration", "eval_duration"}
-
-        for key, pattern in patterns.items():
-            match = re.search(pattern, clean_output, re.MULTILINE)
+        for key, pattern in key_patterns.items():
+            match = re.search(pattern, clean_output)
             if match:
                 value = match.group(1)
-                if key in ms_patterns:
+                if key == "eval_duration":
                     # 将毫秒转换为秒
                     metrics[key] = float(value) / 1000.0
-                elif "duration" in key and "s" in pattern:
-                    # 已经是秒
-                    metrics[key] = float(value)
                 else:
                     # 其他数值直接转换
                     metrics[key] = float(value) if '.' in value else int(value)
@@ -289,27 +272,19 @@ class DirectOllamaTester:
         start_time = time.perf_counter_ns()
 
         try:
-            # 使用优化的子进程参数，处理编码问题
+            # 优化的子进程参数：减少编码处理开销
             result = subprocess.run(
                 cmd,
                 capture_output=True,
+                text=True,  # 直接获取文本，避免手动解码
                 timeout=self.timeout,
-                env={**os.environ, 'PYTHONIOENCODING': 'utf-8', 'LANG': 'C.UTF-8'},
+                encoding='utf-8',
+                errors='ignore',  # 忽略编码错误，减少处理时间
+                env={**os.environ, 'PYTHONIOENCODING': 'utf-8'},
                 stdin=subprocess.DEVNULL,
-                # 使用encoding=None来获取原始字节，避免编码错误
+                # 优化进程参数
+                creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0,
             )
-
-            # 手动处理字节解码，忽略无法解码的字符
-            if result.stderr:
-                try:
-                    result.stderr = result.stderr.decode('utf-8', errors='ignore')
-                except:
-                    result.stderr = ""
-            if result.stdout:
-                try:
-                    result.stdout = result.stdout.decode('utf-8', errors='ignore')
-                except:
-                    result.stdout = ""
 
             end_time = time.perf_counter_ns()
             total_duration = (end_time - start_time) / 1e9
@@ -324,7 +299,7 @@ class DirectOllamaTester:
                     "eval_rate": 0
                 }
 
-            # 解析输出
+            # 解析输出（优化版本）
             output = result.stderr
             metrics = self._parse_verbose_output(output)
             response_content = result.stdout.strip()

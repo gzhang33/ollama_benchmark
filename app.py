@@ -21,7 +21,7 @@ from tkinter import ttk, messagebox
 from src.ollama_client import OllamaClient, get_available_models, query_model
 from src.ollama_utils import create_timestamp
 from src.async_ollama_client import AsyncOllamaClient, ModelTaskQueue, StreamChunk
-from src.direct_ollama_tester import DirectOllamaTester
+from src.http_query_runner import HttpQueryRunner
 
 
 @dataclass
@@ -1000,11 +1000,10 @@ class ModelResponseRow:
 class ChatInterfaceView:
     """Chat interface view with conversation history and bottom input"""
     
-    def __init__(self, parent, on_submit_callback, on_clear_callback, on_toggle_method_callback=None):
+    def __init__(self, parent, on_submit_callback, on_clear_callback):
         self.parent = parent
         self.on_submit_callback = on_submit_callback
         self.on_clear_callback = on_clear_callback
-        self.on_toggle_method_callback = on_toggle_method_callback
         
         self.container = tk.Frame(parent, bg='white')
         self.conversation_widgets = []
@@ -1026,14 +1025,13 @@ class ChatInterfaceView:
                             command=self.on_clear_callback)
         clear_btn.pack(side=tk.LEFT, padx=8)
         
-        # Test method toggle button
-        self.method_btn = tk.Button(toolbar_frame, text="⚡ Direct Method",
-                                  font=('Arial', 9),
-                                  bg='#27ae60', fg='white',
-                                  relief='flat', cursor='hand2',
-                                  padx=12, pady=8,
-                                  command=self.on_toggle_method_callback if self.on_toggle_method_callback else lambda: None)
-        self.method_btn.pack(side=tk.LEFT, padx=8)
+        # HTTP method indicator (read-only)
+        self.method_label = tk.Label(toolbar_frame, text="🌐 HTTP Method",
+                                   font=('Arial', 9),
+                                   bg='#3498db', fg='white',
+                                   relief='flat',
+                                   padx=12, pady=8)
+        self.method_label.pack(side=tk.LEFT, padx=8)
         
         # Progress bar and status (initially hidden)
         self.progress_frame = tk.Frame(toolbar_frame, bg='#f8f9fa')
@@ -1367,9 +1365,9 @@ class ModelComparisonGUI:
         # Core properties
         self.base_url = "http://localhost:11434"
         self.client = OllamaClient(self.base_url)
-        self.async_client = None  # 异步客户端
-        self.task_queue = None    # 任务队列
-        self.direct_tester = DirectOllamaTester()  # 直接方法测试器
+        self.async_client = None  # 异步客户端（保留以兼容旧字段，不再直接使用）
+        self.task_queue = None    # 任务队列（保留以兼容旧字段，不再直接使用）
+        self.http_runner = HttpQueryRunner(self.base_url)  # 模块化HTTP查询器
         self.output_dir = Path("data/app_results")
         self.output_dir.mkdir(exist_ok=True)
         self.models = []
@@ -1381,9 +1379,8 @@ class ModelComparisonGUI:
         self.current_responses: Dict[str, ModelResponse] = {}
         self.streaming_active = False
         
-        # 方法选择：'http' 或 'direct'
-        self.test_method = 'direct'  # 默认使用直接方法（已优化）
-        self.optimization_enabled = True  # 启用性能优化
+        # 方法选择：只使用 HTTP 方法
+        self.test_method = 'http'  # 只使用 HTTP 方法
         
         # Setup GUI
         print("Setting up GUI...")
@@ -1420,8 +1417,7 @@ class ModelComparisonGUI:
         self.chat_view = ChatInterfaceView(
             self.main_container,
             on_submit_callback=self.handle_chat_submit,
-            on_clear_callback=self.handle_clear_conversation,
-            on_toggle_method_callback=self.handle_toggle_method
+            on_clear_callback=self.handle_clear_conversation
         )
         
         # Show landing view initially
@@ -1505,31 +1501,6 @@ class ModelComparisonGUI:
         self.chat_view.clear_conversation()
         self.switch_to_landing()
     
-    def handle_toggle_method(self):
-        """Handle test method toggle"""
-        self.toggle_test_method()
-        
-        # 更新按钮显示
-        if hasattr(self.chat_view, 'method_btn'):
-            if self.test_method == 'direct':
-                self.chat_view.method_btn.config(text="⚡ Direct Method", bg='#27ae60')
-            else:
-                self.chat_view.method_btn.config(text="🌐 HTTP Method", bg='#3498db')
-        
-        print(f"[DEBUG] Method switched to: {self.test_method}")
-    
-    def toggle_test_method(self):
-        """切换测试方法（HTTP vs 直接方法）"""
-        if self.test_method == 'direct':
-            self.test_method = 'http'
-            print("[DEBUG] Switched to HTTP method")
-        else:
-            self.test_method = 'direct'
-            print("[DEBUG] Switched to Direct method")
-    
-    def get_current_test_method(self) -> str:
-        """获取当前测试方法"""
-        return self.test_method
     
     def execute_query(self, query: str):
         """Execute a query against selected models with streaming support"""
@@ -1537,7 +1508,7 @@ class ModelComparisonGUI:
         
         print(f"[DEBUG] Executing query: {query}")
         print(f"[DEBUG] Selected models: {selected_models}")
-        print(f"[DEBUG] Test method: {self.test_method}")
+        print(f"[DEBUG] Using HTTP method")
         
         if not selected_models:
             messagebox.showwarning("Warning", "No models selected")
@@ -1562,206 +1533,100 @@ class ModelComparisonGUI:
         
         # Disable input and show progress
         self.chat_view.disable_input()
-        self.chat_view.show_progress(f"Querying {len(selected_models)} models using {self.test_method} method...")
+        self.chat_view.show_progress(f"Querying {len(selected_models)} models using HTTP method...")
         
-        # 根据测试方法选择执行方式
-        if self.test_method == 'direct':
-            # 使用直接方法执行查询
-            def direct_query_thread():
-                try:
-                    self.direct_execute_query(query, selected_models)
-                except Exception as e:
-                    print(f"[DEBUG] Direct query failed with error: {e}")
-                    import traceback
-                    traceback.print_exc()
-                    error_msg = str(e)
-                    # 使用默认的事件循环来避免变量作用域问题
-                    self.root.after(0, lambda em=error_msg: messagebox.showerror("Error", f"Query failed: {em}"))
-                finally:
-                    self.root.after(0, self.query_complete)
-            
-            threading.Thread(target=direct_query_thread, daemon=True).start()
-        else:
-            # 使用HTTP异步方法执行查询
-            def async_query_thread():
-                try:
-                    # 创建新的事件循环
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    
-                    # 运行异步查询
-                    loop.run_until_complete(self.async_execute_query(query, selected_models))
-                    
-                except Exception as e:
-                    print(f"[DEBUG] Async query failed with error: {e}")
-                    import traceback
-                    traceback.print_exc()
-                    self.root.after(0, lambda: messagebox.showerror("Error", f"Query failed: {str(e)}"))
-                finally:
-                    self.root.after(0, self.query_complete)
-                    loop.close()
-            
-            threading.Thread(target=async_query_thread, daemon=True).start()
+        # 使用HTTP异步方法执行查询
+        def async_query_thread():
+            try:
+                # 创建新的事件循环
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                
+                # 运行异步查询
+                loop.run_until_complete(self.async_execute_query(query, selected_models))
+                
+            except Exception as e:
+                print(f"[DEBUG] Async query failed with error: {e}")
+                import traceback
+                traceback.print_exc()
+                self.root.after(0, lambda: messagebox.showerror("Error", f"Query failed: {str(e)}"))
+            finally:
+                self.root.after(0, self.query_complete)
+                loop.close()
+        
+        threading.Thread(target=async_query_thread, daemon=True).start()
     
-    def direct_execute_query(self, query: str, selected_models: List[str]):
-        """使用直接方法执行查询"""
-        try:
-            results = []
-            
-            for i, model in enumerate(selected_models):
-                print(f"[DEBUG] Executing direct query for model: {model}")
-                self.root.after(0, lambda m=model: self.chat_view.update_progress(f"Testing {m} with direct method..."))
-                
-                # 记录开始时间
-                start_time = time.perf_counter()
-                self.model_start_times[model] = start_time
-                
-                # 使用优化版本的直接方法测试
-                result = self.direct_tester.test_output_generation_time_optimized(
-                    model, query, num_predict=400, use_cache=self.optimization_enabled
-                )
-                
-                # 计算总时间
-                total_time = time.perf_counter() - start_time
-                
-                # 更新响应
-                if model in self.current_responses:
-                    response = self.current_responses[model]
-                    response.success = result.get("success", False)
-
-                    # 确保有response字段，使用多种备选方案
-                    if "response" in result and result["response"]:
-                        response.response = result["response"]
-                        print(f"[DEBUG] Using response field: {len(result['response'])} chars")
-                    elif "raw_output" in result and result["raw_output"]:
-                        response.response = result["raw_output"]
-                        print(f"[DEBUG] Using raw_output field: {len(result['raw_output'])} chars")
-                    else:
-                        response.response = "No response content available"
-                        print(f"[DEBUG] No response content available for {model}")
-
-                    print(f"[DEBUG] Final response length for {model}: {len(response.response)}")
-
-                    # 确保main_response正确设置
-                    response.__post_init__()
-                    print(f"[DEBUG] After post_init - main_response length: {len(response.main_response)}")
-
-                    response.duration = result.get("eval_duration", 0.0)
-                    response.tokens = result.get("eval_count", 0)
-                    response.tokens_per_second = result.get("eval_rate", 0.0)
-                    response.set_streaming(False)
-
-                    if not result.get("success", False):
-                        response.error = result.get("error", "Unknown error")
-
-                    # 更新UI
-                    self.root.after(0, lambda m=model: self.update_streaming_response(m))
-
-                    print(f"[DEBUG] Direct method result - Model: {model}, Success: {result.get('success', False)}, "
-                          f"Tokens: {result.get('eval_count', 0)}, Duration: {result.get('eval_duration', 0.0):.4f}s, "
-                          f"Speed: {result.get('eval_rate', 0.0):.2f} tokens/s")
-                
-                # 转换为兼容格式
-                results.append({
-                    "model": model,
-                    "success": result.get("success", False),
-                    "response": result.get("response", ""),
-                    "duration": result.get("eval_duration", 0.0),
-                    "tokens": result.get("eval_count", 0),
-                    "tokens_per_second": result.get("eval_rate", 0.0),
-                    "error": result.get("error", "")
-                })
-            
-            # 添加到对话历史
-            self.root.after(0, lambda: self.state_manager.add_conversation_entry(query, results))
-            self.root.after(0, lambda: self.chat_view.update_progress("All direct queries completed"))
-            
-        except Exception as e:
-            print(f"[DEBUG] Direct execution failed: {e}")
-            raise
     
     async def async_execute_query(self, query: str, selected_models: List[str]):
         """异步执行查询"""
         try:
-            # 初始化异步客户端
-            if not self.async_client:
-                self.async_client = AsyncOllamaClient(self.base_url)
-                self.task_queue = ModelTaskQueue(self.async_client)
-            
-            async with self.async_client:
-                self.root.after(0, lambda: self.chat_view.update_progress("Initializing async queries..."))
-                
-                # 定义回调函数
-                async def on_model_start(model: str, index: int):
-                    print(f"[DEBUG] Model {model} started (index: {index})")
-                    # Record when model starts processing (but don't start timing yet - wait for first output)
-                    self.model_start_times[model] = time.perf_counter()
-                    self.root.after(0, lambda: self.chat_view.update_progress(f"Starting {model}..."))
-                
-                async def on_model_chunk(chunk: StreamChunk):
-                    try:
-                        if chunk.model in self.current_responses:
-                            response = self.current_responses[chunk.model]
-                            if not chunk.done:
-                                # Check if this is the first chunk with actual content (start timing here)
-                                if chunk.model not in self.output_start_times and chunk.content.strip():
-                                    self.output_start_times[chunk.model] = time.perf_counter()
-                                    print(f"[DEBUG] Started output timing for model: {chunk.model} (first content chunk)")
-                                    print(f"[DEBUG] Content: '{chunk.content[:50]}...'")
+            self.root.after(0, lambda: self.chat_view.update_progress("Initializing async queries..."))
 
-                                # Append streaming content
-                                response.append_content(chunk.content)
-                                response.set_streaming(True)
+            # 定义回调函数（保持与原行为一致）
+            async def on_model_start(model: str, index: int):
+                print(f"[DEBUG] Model {model} started (index: {index})")
+                self.model_start_times[model] = time.perf_counter()
+                self.root.after(0, lambda: self.chat_view.update_progress(f"Starting {model}..."))
 
-                                print(f"[DEBUG] Received chunk - Model: {chunk.model}, Content length: {len(chunk.content)}, Done: {chunk.done}")
+            async def on_model_chunk(chunk: StreamChunk):
+                try:
+                    if chunk.model in self.current_responses:
+                        response = self.current_responses[chunk.model]
+                        if not chunk.done:
+                            if chunk.model not in self.output_start_times and chunk.content.strip():
+                                self.output_start_times[chunk.model] = time.perf_counter()
+                                print(f"[DEBUG] Started output timing for model: {chunk.model} (first content chunk)")
+                                print(f"[DEBUG] Content: '{chunk.content[:50]}...'")
+
+                            response.append_content(chunk.content)
+                            response.set_streaming(True)
+
+                            print(f"[DEBUG] Received chunk - Model: {chunk.model}, Content length: {len(chunk.content)}, Done: {chunk.done}")
+                        else:
+                            response.set_streaming(False)
+                            response.success = True
+                            response.tokens = chunk.tokens
+
+                            if chunk.model in self.output_start_times:
+                                output_start = self.output_start_times[chunk.model]
+                                response.duration = time.perf_counter() - output_start
+                                print(f"[DEBUG] Using output start time for {chunk.model}: {response.duration:.4f}s")
                             else:
-                                # Streaming completed
-                                response.set_streaming(False)
-                                response.success = True
-                                response.tokens = chunk.tokens
+                                model_start = self.model_start_times.get(chunk.model, time.perf_counter())
+                                response.duration = time.perf_counter() - model_start
+                                print(f"[DEBUG] Using model start time for {chunk.model} (fallback): {response.duration:.4f}s")
 
-                                # Calculate duration from output start time (excludes model loading time)
-                                if chunk.model in self.output_start_times:
-                                    output_start = self.output_start_times[chunk.model]
-                                    response.duration = time.perf_counter() - output_start
-                                    print(f"[DEBUG] Using output start time for {chunk.model}: {response.duration:.4f}s")
-                                else:
-                                    # Fallback to model start time if no output time recorded
-                                    model_start = self.model_start_times.get(chunk.model, time.perf_counter())
-                                    response.duration = time.perf_counter() - model_start
-                                    print(f"[DEBUG] Using model start time for {chunk.model} (fallback): {response.duration:.4f}s")
+                            response.tokens_per_second = response.tokens / response.duration if response.duration > 0 else 0
+                            print(f"[DEBUG] Streaming completed - Model: {chunk.model}, tokens: {response.tokens}, duration: {response.duration:.2f}s, speed: {response.tokens_per_second:.2f} tokens/s")
+                            print(f"[DEBUG] Response state - success: {response.success}, streaming: {response.is_streaming}, error: {response.error}")
 
-                                response.tokens_per_second = response.tokens / response.duration if response.duration > 0 else 0
-                                print(f"[DEBUG] Streaming completed - Model: {chunk.model}, tokens: {response.tokens}, duration: {response.duration:.2f}s, speed: {response.tokens_per_second:.2f} tokens/s")
-                                print(f"[DEBUG] Response state - success: {response.success}, streaming: {response.is_streaming}, error: {response.error}")
+                        self.root.after(0, lambda: self.update_streaming_response(chunk.model))
+                except Exception as e:
+                    print(f"[DEBUG] Chunk processing failed: {e}")
 
-                            # Update UI (in main thread)
-                            self.root.after(0, lambda: self.update_streaming_response(chunk.model))
-                    except Exception as e:
-                        print(f"[DEBUG] Chunk processing failed: {e}")
-                
-                async def on_model_complete(model: str, result: Dict[str, Any], index: int):
-                    print(f"[DEBUG] Model {model} completed (index: {index})")
-                    if model in self.current_responses:
-                        response = self.current_responses[model]
-                        response.success = result['success']
-                        response.duration = result['duration']
-                        response.tokens_per_second = result['tokens_per_second']
-                        if not result['success']:
-                            response.error = result.get('error', 'Unknown error')
-                
-                # 执行顺序任务
-                results = await self.task_queue.execute_sequential_tasks(
-                    selected_models,
-                    query,
-                    on_model_start=on_model_start,
-                    on_model_chunk=on_model_chunk,
-                    on_model_complete=on_model_complete
-                )
-                
-                # 添加到对话历史
-                self.root.after(0, lambda: self.state_manager.add_conversation_entry(query, results))
-                self.root.after(0, lambda: self.chat_view.update_progress("All queries completed"))
+            async def on_model_complete(model: str, result: Dict[str, Any], index: int):
+                print(f"[DEBUG] Model {model} completed (index: {index})")
+                if model in self.current_responses:
+                    response = self.current_responses[model]
+                    response.success = result['success']
+                    response.duration = result['duration']
+                    response.tokens_per_second = result['tokens_per_second']
+                    if not result['success']:
+                        response.error = result.get('error', 'Unknown error')
+
+            # 使用模块化HTTP运行器执行
+            results = await self.http_runner.execute(
+                selected_models,
+                query,
+                num_predict=400,
+                on_model_start=on_model_start,
+                on_model_chunk=on_model_chunk,
+                on_model_complete=on_model_complete,
+            )
+
+            # 添加到对话历史
+            self.root.after(0, lambda: self.state_manager.add_conversation_entry(query, results))
+            self.root.after(0, lambda: self.chat_view.update_progress("All queries completed"))
                 
         except Exception as e:
             print(f"[DEBUG] Async execution failed: {e}")

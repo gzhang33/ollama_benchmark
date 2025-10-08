@@ -263,6 +263,7 @@ class ModelTaskQueue:
         self,
         models: List[str],
         prompt: str,
+        num_predict: int = 512,
         on_model_start: Optional[callable] = None,
         on_model_chunk: Optional[callable] = None,
         on_model_complete: Optional[callable] = None
@@ -292,6 +293,7 @@ class ModelTaskQueue:
                 result = await self.client.query_model_stream(
                     model,
                     prompt,
+                    num_predict=num_predict,
                     on_chunk_callback=on_model_chunk
                 )
                 
