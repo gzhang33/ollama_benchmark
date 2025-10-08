@@ -63,10 +63,11 @@ class ModelResponse:
         return bool(self.think_content.strip())
     
     def append_content(self, content: str):
-        """Append streaming content"""
+        """Append streaming content with optimized parsing"""
         self.response += content
-        # Re-parse think content
-        self.__post_init__()
+        # Only re-parse think content if we detect think tags
+        if '<think>' in content or '</think>' in content:
+            self.__post_init__()
     
     def set_streaming(self, streaming: bool):
         """Set streaming status"""
@@ -751,7 +752,7 @@ class ModelResponseColumn:
         self.render_content()
     
     def render_content(self):
-        """Render content based on response state with improved text formatting"""
+        """Render content based on response state with optimized performance"""
         # Ensure widget is in normal state before modifying
         self.content_text.config(state=tk.NORMAL)
         
@@ -768,32 +769,30 @@ class ModelResponseColumn:
             self.content_text.config(fg='#7f8c8d')
             self.metrics_label.config(text="Processing...")
         else:
-            # Success state - format text for better readability
+            # Success state - optimized rendering
             if not self.model_response.is_streaming:
                 # 非流式：清空并重新渲染
                 self.content_text.delete(1.0, tk.END)
             
-            display_text = ""
+            # 优化文本构建，减少字符串操作
+            display_parts = []
             
             # Add think content if enabled and available
             if self.show_think and self.model_response.has_think_content():
-                # Format think content with proper styling
                 think_lines = self.model_response.think_content.split('\n')
                 formatted_think = '\n'.join(f"💭 {line}" if line.strip() else "💭" for line in think_lines)
-                display_text += f"💭 Think Content:\n{formatted_think}\n\n"
+                display_parts.append(f"💭 Think Content:\n{formatted_think}\n\n")
             
             # Add main response
             if self.model_response.main_response and self.model_response.main_response.strip():
-                display_text += self.model_response.main_response.strip()
-                print(f"[DEBUG] Displaying main_response for {self.model_response.model}: {len(self.model_response.main_response)} chars")
+                display_parts.append(self.model_response.main_response.strip())
             elif self.model_response.response and self.model_response.response.strip():
-                display_text += self.model_response.response.strip()
-                print(f"[DEBUG] Fallback to response for {self.model_response.model}: {len(self.model_response.response)} chars")
+                display_parts.append(self.model_response.response.strip())
             else:
-                display_text = "No response received"
-                print(f"[DEBUG] No response content for {self.model_response.model}")
+                display_parts.append("No response received")
             
-            # 插入内容
+            # 一次性插入所有内容
+            display_text = ''.join(display_parts)
             self.content_text.insert(tk.END, display_text)
             self.content_text.config(fg='#2c3e50')
             
@@ -808,18 +807,12 @@ class ModelResponseColumn:
                 metrics_text = "Completed"
             self.metrics_label.config(text=metrics_text)
         
-        # Configure text widget for better display
-        self.content_text.config(state=tk.NORMAL)
-        
-        # Auto-resize text widget based on content
-        self.auto_resize_text_widget()
-        
-        # Update display
-        self.content_text.update_idletasks()
-        self.container.update_idletasks()
-        
-        # 自动滚动到底部
-        self.content_text.see(tk.END)
+        # 优化UI更新，减少不必要的操作
+        if not self.model_response.is_streaming:
+            # 只在非流式时进行完整更新
+            self.content_text.config(state=tk.NORMAL)
+            self.auto_resize_text_widget()
+            self.content_text.see(tk.END)
     
     def auto_resize_text_widget(self):
         """Automatically resize text widget to fill available space"""
@@ -1378,6 +1371,12 @@ class ModelComparisonGUI:
         self.current_responses: Dict[str, ModelResponse] = {}
         self.streaming_active = False
         
+        # 流式输出优化
+        self.streaming_buffer: Dict[str, str] = {}  # 缓冲流式内容
+        self.last_ui_update = 0  # 上次UI更新时间
+        self.ui_update_interval = 0.1  # UI更新间隔（秒）
+        self.pending_updates: set = set()  # 待更新的模型
+        
         # 方法选择：只使用 HTTP 方法
         self.test_method = 'http'  # 只使用 HTTP 方法
         
@@ -1575,13 +1574,25 @@ class ModelComparisonGUI:
                             if chunk.model not in self.output_start_times and chunk.content.strip():
                                 self.output_start_times[chunk.model] = time.perf_counter()
                                 print(f"[DEBUG] Started output timing for model: {chunk.model} (first content chunk)")
-                                print(f"[DEBUG] Content: '{chunk.content[:50]}...'")
 
+                            # 缓冲流式内容，减少频繁UI更新
+                            if chunk.model not in self.streaming_buffer:
+                                self.streaming_buffer[chunk.model] = ""
+                            self.streaming_buffer[chunk.model] += chunk.content
+                            
                             response.append_content(chunk.content)
                             response.set_streaming(True)
-
-                            print(f"[DEBUG] Received chunk - Model: {chunk.model}, Content length: {len(chunk.content)}, Done: {chunk.done}")
+                            
+                            # 添加到待更新列表
+                            self.pending_updates.add(chunk.model)
+                            
+                            # 批量更新UI（减少更新频率）
+                            current_time = time.perf_counter()
+                            if current_time - self.last_ui_update >= self.ui_update_interval:
+                                self.root.after(0, self.batch_update_streaming_responses)
+                                self.last_ui_update = current_time
                         else:
+                            # 完成时立即更新
                             response.set_streaming(False)
                             response.success = True
                             response.tokens = chunk.tokens
@@ -1589,17 +1600,18 @@ class ModelComparisonGUI:
                             if chunk.model in self.output_start_times:
                                 output_start = self.output_start_times[chunk.model]
                                 response.duration = time.perf_counter() - output_start
-                                print(f"[DEBUG] Using output start time for {chunk.model}: {response.duration:.4f}s")
                             else:
                                 model_start = self.model_start_times.get(chunk.model, time.perf_counter())
                                 response.duration = time.perf_counter() - model_start
-                                print(f"[DEBUG] Using model start time for {chunk.model} (fallback): {response.duration:.4f}s")
 
                             response.tokens_per_second = response.tokens / response.duration if response.duration > 0 else 0
-                            print(f"[DEBUG] Streaming completed - Model: {chunk.model}, tokens: {response.tokens}, duration: {response.duration:.2f}s, speed: {response.tokens_per_second:.2f} tokens/s")
-                            print(f"[DEBUG] Response state - success: {response.success}, streaming: {response.is_streaming}, error: {response.error}")
-
-                        self.root.after(0, lambda: self.update_streaming_response(chunk.model))
+                            
+                            # 清理缓冲
+                            if chunk.model in self.streaming_buffer:
+                                del self.streaming_buffer[chunk.model]
+                            
+                            # 立即更新完成状态
+                            self.root.after(0, lambda: self.update_streaming_response(chunk.model))
                 except Exception as e:
                     print(f"[DEBUG] Chunk processing failed: {e}")
 
@@ -1631,8 +1643,28 @@ class ModelComparisonGUI:
             print(f"[DEBUG] Async execution failed: {e}")
             raise
     
+    def batch_update_streaming_responses(self):
+        """批量更新流式响应显示"""
+        if not self.pending_updates:
+            return
+            
+        try:
+            if self.chat_view.conversation_widgets:
+                last_widget = self.chat_view.conversation_widgets[-1]
+                if isinstance(last_widget, ModelResponseRow):
+                    for model in list(self.pending_updates):
+                        if model in self.current_responses:
+                            response = self.current_responses[model]
+                            for column in last_widget.columns:
+                                if column.model_response.model == model:
+                                    column.update_response(response)
+                                    break
+            self.pending_updates.clear()
+        except Exception as e:
+            print(f"[DEBUG] Batch UI update failed: {e}")
+
     def update_streaming_response(self, model: str):
-        """更新流式响应显示"""
+        """更新单个流式响应显示"""
         if model in self.current_responses:
             response = self.current_responses[model]
 
@@ -1645,13 +1677,8 @@ class ModelComparisonGUI:
                         if isinstance(last_widget, ModelResponseRow):
                             for column in last_widget.columns:
                                 if column.model_response.model == model:
-                                    print(f"[DEBUG] Update UI - Model: {model}, Response length: {len(response.response)}, Main response length: {len(response.main_response)}, Status: {'Complete' if response.success else 'Error' if response.error else 'Loading'}")
                                     column.update_response(response)
                                     break
-                        else:
-                            print(f"[DEBUG] Last widget is not ModelResponseRow: {type(last_widget)}")
-                    else:
-                        print("[DEBUG] No conversation widgets")
                 except Exception as e:
                     print(f"[DEBUG] UI update failed: {e}")
 
@@ -1719,24 +1746,32 @@ class ModelComparisonGUI:
 
     
     def query_complete(self):
-        """Handle query completion"""
+        """Handle query completion with optimized cleanup"""
         try:
             self.chat_view.hide_progress()
             self.chat_view.enable_input()
             self.chat_view.clear_input()
             self.streaming_active = False
 
-            # 清理模型开始时间
+            # 清理所有资源
             if hasattr(self, 'model_start_times'):
                 self.model_start_times.clear()
 
-            # 清理输出开始时间
             if hasattr(self, 'output_start_times'):
                 self.output_start_times.clear()
 
-            # 清理当前响应
             if hasattr(self, 'current_responses'):
                 self.current_responses.clear()
+                
+            # 清理流式输出优化相关资源
+            if hasattr(self, 'streaming_buffer'):
+                self.streaming_buffer.clear()
+                
+            if hasattr(self, 'pending_updates'):
+                self.pending_updates.clear()
+                
+            # 重置UI更新计时器
+            self.last_ui_update = 0
 
             print("[DEBUG] Query completed, all resources cleaned")
         except Exception as e:

@@ -28,10 +28,11 @@ class HTTPConfig:
     """HTTP配置管理类"""
     
     def __init__(self):
-        self.max_keepalive_connections = int(os.getenv('HTTP_MAX_KEEPALIVE', 20))
-        self.max_connections = int(os.getenv('HTTP_MAX_CONNECTIONS', 100))
-        self.keepalive_expiry = float(os.getenv('HTTP_KEEPALIVE_EXPIRY', 30.0))
-        self.timeout = int(os.getenv('HTTP_TIMEOUT', 60))
+        # 优化连接池配置，提高并发性能
+        self.max_keepalive_connections = int(os.getenv('HTTP_MAX_KEEPALIVE', 50))  # 增加保持连接数
+        self.max_connections = int(os.getenv('HTTP_MAX_CONNECTIONS', 200))  # 增加最大连接数
+        self.keepalive_expiry = float(os.getenv('HTTP_KEEPALIVE_EXPIRY', 60.0))  # 延长连接保持时间
+        self.timeout = int(os.getenv('HTTP_TIMEOUT', 120))  # 增加超时时间
         self.enable_http2 = os.getenv('HTTP_ENABLE_HTTP2', 'true').lower() == 'true'
     
     def get_limits(self) -> httpx.Limits:
@@ -226,6 +227,7 @@ class UnifiedOllamaClient:
                 response.raise_for_status()
                 
                 try:
+                    # 优化流式处理，减少不必要的处理
                     async for line in response.aiter_lines():
                         if line.strip():
                             try:
@@ -236,12 +238,8 @@ class UnifiedOllamaClient:
                                 if response_content:
                                     response_text += response_content
                                     
-                                    # 使用Ollama返回的eval_count，如果没有则估算
-                                    current_tokens = 0
-                                    if 'eval_count' in data:
-                                        current_tokens = data['eval_count']
-                                    else:
-                                        current_tokens = len(response_text) // 4
+                                    # 优化token计算
+                                    current_tokens = data.get('eval_count', len(response_text) // 4)
                                     
                                     # 创建数据块并调用回调
                                     if on_chunk_callback:
@@ -251,7 +249,8 @@ class UnifiedOllamaClient:
                                             done=False,
                                             tokens=current_tokens
                                         )
-                                        await on_chunk_callback(chunk)
+                                        # 使用asyncio.create_task避免阻塞
+                                        asyncio.create_task(on_chunk_callback(chunk))
                                 
                                 # 检查是否完成
                                 if data.get('done', False):

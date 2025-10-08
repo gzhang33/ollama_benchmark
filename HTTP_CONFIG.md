@@ -12,26 +12,26 @@ The unified HTTP client supports the following environment variables for configu
 ### 连接池设置
 
 ```bash
-# Maximum number of keep-alive connections
-# 最大保持连接数
-HTTP_MAX_KEEPALIVE=20
+# Maximum number of keep-alive connections (optimized for performance)
+# 最大保持连接数（性能优化）
+HTTP_MAX_KEEPALIVE=50
 
-# Maximum number of total connections  
-# 最大总连接数
-HTTP_MAX_CONNECTIONS=100
+# Maximum number of total connections (optimized for high concurrency)
+# 最大总连接数（高并发优化）
+HTTP_MAX_CONNECTIONS=200
 
-# Keep-alive connection expiry time in seconds
-# 保持连接过期时间（秒）
-HTTP_KEEPALIVE_EXPIRY=30.0
+# Keep-alive connection expiry time in seconds (optimized for streaming)
+# 保持连接过期时间（流式优化）
+HTTP_KEEPALIVE_EXPIRY=60.0
 ```
 
 ### Timeout Settings
 ### 超时设置
 
 ```bash
-# HTTP request timeout in seconds
-# HTTP请求超时时间（秒）
-HTTP_TIMEOUT=60
+# HTTP request timeout in seconds (optimized for long responses)
+# HTTP请求超时时间（长响应优化）
+HTTP_TIMEOUT=120
 ```
 
 ### Protocol Settings
