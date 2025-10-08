@@ -16,54 +16,34 @@ parts/
 sdist/
 var/
 wheels/
-pip-wheel-metadata/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
 # Virtual environments
-.env
-.venv
-env/
 venv/
+env/
 ENV/
-env.bak/
-venv.bak/
 
-# IDEs
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
 
 # OS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
 
-# Benchmark results
-*_results.json
-*_results.yaml
-*_results.yml
-benchmark_*.json
-benchmark_*.yaml
-benchmark_*.yml
-
-# Logs
+# Project specific
 *.log
-logs/
+.env
+.env.local
 
-# Temporary files
-tmp/
-temp/
-.tmp/
+# Test results (optional - uncomment if you don't want to track test results)
+# speed_test_results/
+# analysis_results/
 
-# Test files
-test_output.*
+# ai agent rules
+# .cursor/
+# .kiro/
