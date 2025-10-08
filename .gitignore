@@ -40,10 +40,24 @@ Thumbs.db
 .env
 .env.local
 
-# Test results (optional - uncomment if you don't want to track test results)
-# speed_test_results/
-# analysis_results/
+# Test results and data files
+data/app_results/
+data/output_generation_results/
+data/speed_test_results/
+data/analysis_results/
+*_results.json
+*_results.yaml
+*_results.yml
+benchmark_*.json
+benchmark_*.yaml
+benchmark_*.yml
 
-# ai agent rules
+# Temporary files
+tmp/
+temp/
+.tmp/
+test_output.*
+
+# AI agent rules (optional - uncomment if you don't want to track)
 # .cursor/
 # .kiro/
