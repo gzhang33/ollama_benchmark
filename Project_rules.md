@@ -7,7 +7,7 @@
 ollama_test/
 ├── app.py                          # Main application entry
 ├── src/                           # Core source code
-│   ├── ollama_client.py           # Ollama API client
+│   ├── unified_ollama_client.py  # Unified Ollama API client
 │   └── ollama_utils.py            # Utility functions
 ├── tests/                         # Test files
 │   └── performance.py             # Performance testing
@@ -38,7 +38,7 @@ ollama_test/
 
 ### Python Package Structure
 - Each directory must contain `__init__.py`
-- Use relative imports: `from src.ollama_client import ...`
+- Use relative imports: `from src.unified_ollama_client import ...`
 - Maintain single responsibility per file
 - Keep files under 500 lines when possible
 
@@ -70,11 +70,11 @@ import sys
 from pathlib import Path
 
 # Third-party imports
-import requests
+import httpx
 import tkinter as tk
 
 # Local module imports
-from src.ollama_client import OllamaClient
+from src.unified_ollama_client import UnifiedOllamaClient
 from utils.resource_monitor import ResourceMonitor
 ```
 
@@ -92,8 +92,8 @@ from utils.resource_monitor import ResourceMonitor
 ## Module Architecture
 
 ### Core Modules
-- **`ollama_client.py`**: Ollama API interactions
-  - `OllamaClient` class for API communication
+- **`unified_ollama_client.py`**: Unified Ollama API interactions
+  - `UnifiedOllamaClient` class for API communication
   - `get_available_models()` and `query_model()` functions
 - **`ollama_utils.py`**: Common utility functions
   - Test prompts, data export, timestamp generation

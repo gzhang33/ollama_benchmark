@@ -1309,7 +1309,7 @@ class ModelSelectionPanel:
         self.dialog.wait_window()
 
 
-# Model querying functions moved to ollama_client.py
+# Model querying functions moved to unified_ollama_client.py
 
 
 def save_results_to_file(

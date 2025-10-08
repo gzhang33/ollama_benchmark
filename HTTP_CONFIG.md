@@ -155,11 +155,11 @@ The unified client maintains backward compatibility with the old requests-based 
 统一客户端保持与旧requests客户端的向后兼容性：
 
 ```python
-# Old code (still works)
-# 旧代码（仍然有效）
-from src.ollama_client import OllamaClient
-client = OllamaClient()
-models = client.get_available_models()
+# Old code (deprecated - use unified client)
+# 旧代码（已弃用 - 请使用统一客户端）
+# from src.ollama_client import OllamaClient  # This file has been removed
+# client = OllamaClient()
+# models = client.get_available_models()
 
 # New code (recommended)
 # 新代码（推荐）

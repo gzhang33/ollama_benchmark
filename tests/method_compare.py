@@ -12,9 +12,9 @@ import sys
 import time
 from typing import Any, Dict, List
 
-from src.ollama_client import OllamaClient
+from src.unified_ollama_client import UnifiedOllamaClient
 from src.direct_ollama_tester import DirectOllamaTester
-from src.http_query_runner import HttpQueryRunner
+from src.unified_http_query_runner import UnifiedHttpQueryRunner
 
 
 def pick_models(all_models: List[str], max_count: int = 2) -> List[str]:
@@ -33,7 +33,7 @@ def run_direct(models: List[str], prompt: str, num_predict: int = 400) -> float:
 
 
 async def run_http_async(models: List[str], prompt: str, num_predict: int = 400) -> float:
-    runner = HttpQueryRunner()
+    runner = UnifiedHttpQueryRunner()
 
     async def on_start(model: str, index: int):
         return None
@@ -68,8 +68,9 @@ def run_http(models: List[str], prompt: str, num_predict: int = 400) -> float:
 def main() -> None:
     prompt = sys.argv[1] if len(sys.argv) > 1 else "Explain quicksort in brief."
 
-    client = OllamaClient()
+    client = UnifiedOllamaClient()
     all_models = client.get_available_models()
+    client.close_sync()
     if not all_models:
         print("No models available. Ensure Ollama is running and models are pulled.")
         sys.exit(1)

@@ -87,9 +87,9 @@ See [HTTP_CONFIG.md](HTTP_CONFIG.md) for detailed configuration options.
 ollama_test/
 ├── app.py                          # 🎯 Main application entry
 ├── src/                           # 📦 Core source code
-│   ├── ollama_client.py           # Ollama API client
+│   ├── unified_ollama_client.py  # Unified Ollama API client
 │   ├── ollama_utils.py            # Utility functions
-│   └── async_ollama_client.py     # Async client with connection pooling
+│   └── unified_http_query_runner.py # Unified HTTP query runner
 ├── tests/                         # 🧪 Test files
 │   └── performance.py             # Performance testing script
 ├── utils/                         # 🔧 Utility modules
@@ -433,8 +433,8 @@ python tests/performance.py  # Automatically generates analysis after testing
 This project uses a modular architecture for better maintainability and code reuse:
 
 ### Core Modules
-- `src/ollama_client.py`: Ollama API client functionality
-- `src/async_ollama_client.py`: Async client with connection pooling and streaming
+- `src/unified_ollama_client.py`: Unified Ollama API client functionality
+- `src/unified_http_query_runner.py`: Unified HTTP query runner with connection pooling and streaming
 - `src/ollama_utils.py`: Data processing and utility functions
 - `utils/resource_monitor.py`: GPU/CPU monitoring and metrics collection
 - `utils/visualization.py`: Chart generation and analysis

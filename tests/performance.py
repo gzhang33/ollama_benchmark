@@ -136,7 +136,7 @@ def run_output_generation_test(
 
 
 # CSV export and summary functions moved to ollama_utils.py
-# Model listing function moved to ollama_client.py
+# Model listing function moved to unified_ollama_client.py
 # Resource monitoring functions moved to resource_monitor.py
 
 
@@ -171,9 +171,10 @@ def main() -> None:
     else:
         print("\nDiscovering available models...")
         # 使用简单的模型发现方法
-        from src.ollama_client import OllamaClient
-        client = OllamaClient(args.base_url)
+        from src.unified_ollama_client import UnifiedOllamaClient
+        client = UnifiedOllamaClient(args.base_url)
         models = client.get_available_models()
+        client.close_sync()
         print(f"Found {len(models)} models: {', '.join(models)}")
 
     if not models:
