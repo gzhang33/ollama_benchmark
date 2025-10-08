@@ -14,8 +14,11 @@ A comprehensive toolkit for testing local Ollama model performance, helping you 
 - **Chat Interface**: Conversation-based UI with history and follow-up questions
 
 ### Performance Optimizations
+- **Unified HTTP Client**: Single httpx-based client for all HTTP operations
 - **Async Task Scheduling**: Built with `asyncio` for non-blocking operations
 - **HTTP Connection Pool**: Reuses connections to reduce latency by 90%
+- **HTTP/2 Support**: Modern protocol for better performance
+- **Configurable Connection Pool**: Environment variable configuration for optimal tuning
 - **Task Queue Management**: Sequential model execution prevents GPU resource competition
 - **Stream Processing**: Real-time chunk-based response handling
 - **GPU Auto-Configuration**: Automatically sets optimal GPU layers based on available memory
@@ -31,6 +34,30 @@ A comprehensive toolkit for testing local Ollama model performance, helping you 
 ```bash
 pip install -r requirements.txt
 ```
+
+## ⚙️ Configuration
+
+The tool supports environment variable configuration for optimal performance tuning:
+
+### HTTP Client Configuration
+```bash
+# Connection pool settings
+HTTP_MAX_KEEPALIVE=20          # Max keep-alive connections
+HTTP_MAX_CONNECTIONS=100       # Max total connections
+HTTP_KEEPALIVE_EXPIRY=30.0     # Keep-alive expiry time (seconds)
+HTTP_TIMEOUT=60                # Request timeout (seconds)
+HTTP_ENABLE_HTTP2=true         # Enable HTTP/2 support
+```
+
+### Ollama Configuration
+```bash
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_ENABLE_CUDA=1
+OLLAMA_MAX_GPU_MEMORY=15GB
+OLLAMA_USE_MLOCK=1
+```
+
+See [HTTP_CONFIG.md](HTTP_CONFIG.md) for detailed configuration options.
 
 ## 🚀 Performance Highlights
 
