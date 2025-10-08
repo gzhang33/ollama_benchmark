@@ -18,10 +18,9 @@ from typing import Any, Dict, List, Optional
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-from src.ollama_client import OllamaClient, get_available_models, query_model
+from src.unified_ollama_client import UnifiedOllamaClient, get_available_models, query_model, StreamChunk
 from src.ollama_utils import create_timestamp
-from src.async_ollama_client import AsyncOllamaClient, ModelTaskQueue, StreamChunk
-from src.http_query_runner import HttpQueryRunner
+from src.unified_http_query_runner import UnifiedHttpQueryRunner
 
 
 @dataclass
@@ -1364,10 +1363,10 @@ class ModelComparisonGUI:
     def __init__(self):
         # Core properties
         self.base_url = "http://localhost:11434"
-        self.client = OllamaClient(self.base_url)
+        self.client = UnifiedOllamaClient(self.base_url)
         self.async_client = None  # 异步客户端（保留以兼容旧字段，不再直接使用）
         self.task_queue = None    # 任务队列（保留以兼容旧字段，不再直接使用）
-        self.http_runner = HttpQueryRunner(self.base_url)  # 模块化HTTP查询器
+        self.http_runner = UnifiedHttpQueryRunner(self.base_url)  # 统一HTTP查询器
         self.output_dir = Path("data/app_results")
         self.output_dir.mkdir(exist_ok=True)
         self.models = []
@@ -1756,6 +1755,9 @@ class ModelComparisonGUI:
                     self.root.after(0, lambda: messagebox.showerror("Error", "No models found. Please check Ollama service."))
             except Exception as e:
                 self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to load models: {str(e)}"))
+            finally:
+                # 关闭同步客户端连接
+                self.client.close_sync()
         
         threading.Thread(target=load_thread, daemon=True).start()
     
