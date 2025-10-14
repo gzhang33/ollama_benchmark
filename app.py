@@ -18,6 +18,25 @@ from typing import Any, Dict, List, Optional
 import tkinter as tk
 from tkinter import ttk, messagebox
 
+def safe_print(*args, **kwargs):
+    """Safe print function that handles Unicode encoding issues"""
+    try:
+        print(*args, **kwargs)
+    except UnicodeEncodeError:
+        # Fallback: convert to repr for problematic characters
+        safe_args = []
+        for arg in args:
+            if isinstance(arg, str):
+                try:
+                    # Try to encode to see if it's safe
+                    arg.encode('cp1252')
+                    safe_args.append(arg)
+                except UnicodeEncodeError:
+                    safe_args.append(repr(arg))
+            else:
+                safe_args.append(arg)
+        print(*safe_args, **kwargs)
+
 from src.unified_ollama_client import UnifiedOllamaClient, get_available_models, query_model, StreamChunk
 from src.ollama_utils import create_timestamp
 from src.unified_http_query_runner import UnifiedHttpQueryRunner
@@ -505,6 +524,8 @@ class LandingPageView:
         """Hide the model selection dropdown"""
         self.dropdown_visible = False
         self.model_select_btn.config(text="🎯 Select Models ▼")
+        # Ensure mouse wheel bindings are removed when hiding
+        self._unbind_mousewheel()
         self.dropdown_container.pack_forget()
     
     def populate_dropdown(self, models: List[str], selected_models: List[str], on_change_callback):
@@ -527,6 +548,9 @@ class LandingPageView:
         
         canvas.create_window((0, 0), window=scrollable_frame, anchor=tk.NW)
         canvas.configure(yscrollcommand=scrollbar.set)
+        # Bind mouse wheel when cursor enters/leaves the scrollable area
+        scrollable_frame.bind("<Enter>", lambda e: self._bind_mousewheel(canvas))
+        scrollable_frame.bind("<Leave>", lambda e: self._unbind_mousewheel())
         
         # Add checkboxes for each model
         self.model_vars = {}
@@ -622,6 +646,46 @@ class LandingPageView:
     def hide(self):
         """Hide the landing page"""
         self.container.pack_forget()
+
+    # --- Mouse wheel support for dropdown scrolling ---
+    def _on_mousewheel(self, event):
+        """Handle mouse wheel events for the dropdown canvas.
+        Supports Windows/macOS (<MouseWheel>) and Linux (<Button-4>/<Button-5>)."""
+        canvas = getattr(self, "_wheel_canvas", None)
+        if canvas is None:
+            return
+        # Windows/macOS provide event.delta; positive is up, negative is down
+        if hasattr(event, "delta") and event.delta:
+            direction = -1 if event.delta > 0 else 1
+            canvas.yview_scroll(direction, "units")
+        # Linux uses Button-4 (up) and Button-5 (down)
+        elif hasattr(event, "num"):
+            if event.num == 4:
+                canvas.yview_scroll(-1, "units")
+            elif event.num == 5:
+                canvas.yview_scroll(1, "units")
+
+    def _bind_mousewheel(self, canvas):
+        """Bind mouse wheel events while hovering the dropdown."""
+        self._wheel_canvas = canvas
+        root = self.container.winfo_toplevel()
+        # Windows/macOS
+        root.bind_all("<MouseWheel>", self._on_mousewheel)
+        # Linux
+        root.bind_all("<Button-4>", self._on_mousewheel)
+        root.bind_all("<Button-5>", self._on_mousewheel)
+
+    def _unbind_mousewheel(self):
+        """Unbind mouse wheel events when leaving/hiding the dropdown."""
+        try:
+            root = self.container.winfo_toplevel()
+            root.unbind_all("<MouseWheel>")
+            root.unbind_all("<Button-4>")
+            root.unbind_all("<Button-5>")
+        except Exception:
+            pass
+        if hasattr(self, "_wheel_canvas"):
+            delattr(self, "_wheel_canvas")
 
 
 class BottomInputBar:
@@ -882,7 +946,7 @@ class ModelResponseColumn:
                 renderer.render_markdown(display_text)
             except Exception as e:
                 # 如果Markdown渲染失败，回退到普通文本
-                print(f"[DEBUG] Markdown rendering failed: {e}")
+                safe_print(f"[DEBUG] Markdown rendering failed: {e}")
                 # 简单处理markdown格式
                 processed_text = self._process_markdown_simple(display_text)
                 self.content_text.insert(tk.END, processed_text)
@@ -1670,9 +1734,9 @@ class ModelComparisonGUI:
         """Execute a query against selected models with streaming support"""
         selected_models = self.state_manager.get_selected_models()
         
-        print(f"[DEBUG] Executing query: {query}")
-        print(f"[DEBUG] Selected models: {selected_models}")
-        print(f"[DEBUG] Using HTTP method")
+        safe_print(f"[DEBUG] Executing query: {query}")
+        safe_print(f"[DEBUG] Selected models: {selected_models}")
+        safe_print(f"[DEBUG] Using HTTP method")
         
         if not selected_models:
             messagebox.showwarning("Warning", "No models selected")
@@ -1717,7 +1781,8 @@ class ModelComparisonGUI:
                 print(f"[DEBUG] Async query failed with error: {e}")
                 import traceback
                 traceback.print_exc()
-                self.root.after(0, lambda: messagebox.showerror("Error", f"Query failed: {str(e)}"))
+                err_msg = f"Query failed: {str(e)}"
+                self.root.after(0, lambda m=err_msg: messagebox.showerror("Error", m))
             finally:
                 self.root.after(0, self.query_complete)
                 loop.close()
@@ -1796,7 +1861,8 @@ class ModelComparisonGUI:
                         response.error = result.get('error', 'Unknown error')
 
             # 使用模块化HTTP运行器执行
-            results = await self.http_runner.execute(
+            runner = UnifiedHttpQueryRunner(self.base_url)
+            results = await runner.execute(
                 selected_models,
                 query,
                 num_predict=400,
@@ -2021,7 +2087,7 @@ def main():
         app.run()
         print("GUI main loop ended")
     except Exception as e:
-        print(f"GUI startup failed: {e}")
+        safe_print(f"GUI startup failed: {e}")
         import traceback
         traceback.print_exc()
 
